@@ -4,7 +4,7 @@ import { signIn } from "next-auth/react";
 export default function Login() {
 
     const handleLogin = () => {
-      signIn("spotify", { callbackUrl: "http://localhost:3000/error"});
+      signIn("spotify", { callbackUrl: "http://localhost:3000" });
     };
   
     return (
