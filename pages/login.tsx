@@ -8,7 +8,7 @@ export default function Login() {
     };
   
     return (
-        <div className="flex items-center justify-center ">
+        <div className="flex items-center justify-center w-full h-screen bg-black">
           <button
             className="bg-slate-800 w-1/6 "
             onClick={handleLogin}>
