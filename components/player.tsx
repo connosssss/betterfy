@@ -1,46 +1,62 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState } from 'react';
 
-interface Track {
-  albumImage: string;
-  title: string;
-  artist: string;
-  songUrl: string;
-  isPlaying: boolean;
-}
+export default function Player({ accessToken }) {
 
-interface PlayerProps {
-  accessToken: string;
-}
+  const [playerState, setPlayerState] = useState(null);
+  const [isPlaying, setIsPlaying] = useState(false);
 
-export default function Player({ accessToken }: PlayerProps) {
-  const [track, setTrack] = useState<Track | null>(null);
+  const spotifyFetch = async (endpoint, method = 'GET', body = null) => {
+
+    const response = await fetch(`https://api.spotify.com/v1${endpoint}`, {
+
+      method,
+      headers: {
+        'Authorization': `Bearer ${accessToken}`,
+      },
+      body: body ? JSON.stringify(body) : null,
+    });
+    
+    if (method !== 'PUT' && method !== 'POST') {
+      return response.json();
+    }
+  }
 
   useEffect(() => {
-    if (!accessToken) return;
+    if (accessToken) {
+      getPlayerState()
+      const interval = setInterval(getPlayerState, 1000);
+      return () => clearInterval(interval);
+    }
+  }, [accessToken])
 
-    const fetchTrack = async () => {
-      const response = await fetch("/api/spotify/current");
-      const data = await response.json();
-      setTrack(data);
-    };
+  const getPlayerState = async () => {
+    try {
+      const state = await spotifyFetch('/me/player');
+      setPlayerState(state);
+      setIsPlaying(state?.is_playing);
+    } catch (error) {
+      console.error('Error with player state:', error);
+    }
+  }
 
-    fetchTrack();
-    const interval = setInterval(fetchTrack, 10000); 
-    return () => clearInterval(interval);
-  }, [accessToken]);
+  
 
-  if (!track || !track.isPlaying) return <p>No song is currently playing.</p>;
+ 
+
+  if (!playerState?.device) return <div>No active device</div>
 
   return (
-    <div className="flex items-center p-4 bg-gray-800 text-white rounded-lg shadow-lg">
-      <img src={track.albumImage} alt={track.title} className="w-16 h-16 rounded-lg" />
-      <div className="ml-4">
-        <h3 className="text-lg font-bold">{track.title}</h3>
-        <p className="text-gray-400">{track.artist}</p>
-      </div>
-      <a href={track.songUrl} target="_blank" rel="noopener noreferrer" className="ml-auto text-green-400 hover:underline">
-        Open in Spotify
-      </a>
+    <div>
+      {playerState.item && (
+        <div>
+          <img src={playerState.item.album.images[0].url} width={300} height={300}/>
+          <div>
+            <div>{playerState.item.name}</div>
+            <div>{playerState.item.artists[0].name}</div>
+          </div>
+        </div>
+      )}
+      
     </div>
-  );
+  )
 }

@@ -1,40 +1,6 @@
+
 import NextAuth from "next-auth";
 import SpotifyProvider from "next-auth/providers/spotify";
-
-const scope =
-  "user-read-recently-played user-read-playback-state user-top-read user-modify-playback-state user-read-currently-playing user-follow-read playlist-read-private user-read-email user-read-private user-library-read playlist-read-collaborative";
-
-export default NextAuth({
-  providers: [
-    SpotifyProvider({
-      clientId: process.env.SPOTIFY_CLIENT_ID,
-      clientSecret: process.env.SPOTIFY_CLIENT_SECRET,
-      authorization: {
-        params: { scope },
-      },
-    }),
-  ],
-  secret: process.env.NEXTAUTH_SECRET,
-  callbacks: {
-    async jwt({ token, account }) {
-      if (account) {
-        token.id = account.id;
-        token.expires_at = account.expires_at;
-        token.accessToken = account.access_token;
-      }
-      return token;
-    },
-    async session({ session, token }) {
-      session.user = token;
-      return session;
-    },
-  },
-  pages: {
-    signIn: "/login",
-  },
-});
-
-
 
 const refreshAccessToken = async (token) => {
   try {
@@ -42,9 +8,7 @@ const refreshAccessToken = async (token) => {
       method: "POST",
       headers: {
         "Content-Type": "application/x-www-form-urlencoded",
-        Authorization: `Basic ${Buffer.from(
-          `${process.env.SPOTIFY_CLIENT_ID}:${process.env.SPOTIFY_CLIENT_SECRET}`
-        ).toString("base64")}`,
+        Authorization: `Basic ${Buffer.from(`${process.env.SPOTIFY_CLIENT_ID}:${process.env.SPOTIFY_CLIENT_SECRET}`).toString("base64")}`,
       },
       body: new URLSearchParams({
         grant_type: "refresh_token",
@@ -52,17 +16,55 @@ const refreshAccessToken = async (token) => {
       }),
     });
 
-    const refreshedTokens = await response.json();
-    if (!response.ok) throw refreshedTokens;
-
+    const data = await response.json();
     return {
       ...token,
-      accessToken: refreshedTokens.access_token,
-      accessTokenExpires: Date.now() + refreshedTokens.expires_in * 1000,
-      refreshToken: refreshedTokens.refresh_token || token.refreshToken,
-    };
-  } catch (error) {
-    console.error("Error refreshing access token", error);
-    return { ...token, error: "RefreshAccessTokenError" };
+      accessToken: data.access_token,
+      accessTokenExpires: Date.now() + data.expires_in * 1000,
+    }
+  } 
+  catch (error) {
+    return {
+      ...token
+    }
   }
-};
+}
+
+export default NextAuth({
+  providers: [
+    SpotifyProvider({
+      clientId: process.env.SPOTIFY_CLIENT_ID,
+      clientSecret: process.env.SPOTIFY_CLIENT_SECRET,
+      authorization: {
+        params: {
+          scope: 'user-read-email user-read-private user-read-playback-state user-modify-playback-state',
+          show_dialog: true,
+        },
+      },
+    }),
+  ],
+
+
+  callbacks: {
+    async jwt({ token, account, user }) {
+      if (account && user) {
+        return {
+          accessToken: account.access_token,
+          refreshToken: account.refresh_token,
+          accessTokenExpires: account.expires_at * 1000,
+        }
+      }
+
+      if (Date.now() < token.accessTokenExpires) {
+        return token;
+      }
+
+      return refreshAccessToken(token);
+    },
+    async session({ session, token }) {
+      session.accessToken = token.accessToken;
+      session.error = token.error;
+      return session;
+    },
+  },
+});
