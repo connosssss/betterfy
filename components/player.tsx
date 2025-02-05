@@ -64,6 +64,7 @@ export default function Player({ accessToken }: PlayerProps) {
   //Color
   const getColor = () => {
     if (imgRef.current && colorThiefRef.current) {
+      //Color thief for now works buy may want to use something else in the future to get colors
       try {
         const color = colorThiefRef.current.getColor(imgRef.current);
         const hexColor = rgbToHex(color[0], color[1], color[2]);
@@ -73,7 +74,7 @@ export default function Player({ accessToken }: PlayerProps) {
       }
     }
   };
-
+    //copied/can change if needed but dont think it doesnt work 
   const rgbToHex = (r: number, g: number, b: number) => '#' + [r, g, b].map(x => x.toString(16).padStart(2, '0')).join('');
   //PlayerState
   const getPlayerState = async () => {
@@ -86,15 +87,23 @@ export default function Player({ accessToken }: PlayerProps) {
     }
   };
 
+  const handleClick = () => {
+    if (playerState?.item) {
+      const songUrl = `https://open.spotify.com/track/${playerState.item.id}`;
+      window.open(songUrl, '_blank');
+    }
+  };
+
   if (!playerState?.device) return <div className='w-screen text-center'>No active device</div>;
   // !!!!! Possible need to change text color based on that of the backgroujnd
   return (
     <div className="transition-colors duration-1000 ease-in-out h-screen w-full" style={{ backgroundColor: bg }}>
       {playerState.item && (
         <div className='flex flex-col items-center justify-center'>
-          <img ref={imgRef} src={playerState.item.album.images[0].url} width={550} height={550} 
-           className='rounded-xl mt-10 drop-shadow-2xl'
+          <img ref={imgRef} src={playerState.item.album.images[0].url} width={550} height={550}  
+           className='rounded-xl mt-10 shadow-xl hover:scale-105 transition-transform duration-300 ease-in-out'
             onLoad={getColor} crossOrigin="anonymous"
+            onClick={handleClick}
           />
           <div className='mt-5 text-center'>
             <div className='text-5xl font-atkinson-hyperlegible p-3'>{playerState.item.name}</div>
