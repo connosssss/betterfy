@@ -1,4 +1,5 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
+import dynamic from 'next/dynamic';
 
 interface PlayerProps {
   accessToken: string;
@@ -16,13 +17,16 @@ interface PlayerState {
   is_playing: boolean;
 }
 
-export default function Player({ accessToken }) {
+const ColorThief = dynamic(() => import('colorthief'), { ssr: false });
 
-  const [playerState, setPlayerState] = useState(null);
+export default function Player({ accessToken }: PlayerProps) {
+  const [playerState, setPlayerState] = useState<PlayerState | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
+  const [bg, setBg] = useState('#1a1a1a');
+  const imgRef = useRef<HTMLImageElement | null>(null);
+  const colorThiefRef = useRef<any>(null);
 
   const spotifyFetch = async (endpoint: string, method = 'GET', body: any = null) => {
-    
     const response = await fetch(`https://api.spotify.com/v1${endpoint}`, {
       method,
       headers: {
@@ -43,40 +47,60 @@ export default function Player({ accessToken }) {
 
   useEffect(() => {
     if (accessToken) {
-      getPlayerState()
+      getPlayerState();
       const interval = setInterval(getPlayerState, 1000);
       return () => clearInterval(interval);
     }
-  }, [accessToken])
+  }, [accessToken]);
 
+  useEffect(() => {
+    const loadColorThief = async () => {
+      const module = await import('colorthief');
+      colorThiefRef.current = new module.default();
+    };
+    loadColorThief();
+  }, []);
+
+  //Color
+  const getColor = () => {
+    if (imgRef.current && colorThiefRef.current) {
+      try {
+        const color = colorThiefRef.current.getColor(imgRef.current);
+        const hexColor = rgbToHex(color[0], color[1], color[2]);
+        setBg(hexColor);
+      } catch (error) {
+        console.error('Error extracting color:', error);
+      }
+    }
+  };
+
+  const rgbToHex = (r: number, g: number, b: number) => '#' + [r, g, b].map(x => x.toString(16).padStart(2, '0')).join('');
+  //PlayerState
   const getPlayerState = async () => {
     try {
       const state = await spotifyFetch('/me/player');
       setPlayerState(state);
       setIsPlaying(state?.is_playing);
-    } 
-    catch (error) {
+    } catch (error) {
       console.error('Error with player state:', error);
     }
-  }
+  };
 
-  
-
-
-  if (!playerState?.device) return <div>No active device</div>
+  if (!playerState?.device) return <div className='w-screen text-center'>No active device</div>;
 
   return (
-    <div>
+    <div className="transition-colors duration-1000 ease-in-out h-screen w-full" style={{ backgroundColor: bg }}>
       {playerState.item && (
-        <div className='h-9/10 w-full flex bg-slate-600 flex-col items-center justify-center'>
-          <img src={playerState.item.album.images[0].url} width={550} height={550} className='rounded-xl mt-10'/>
+        <div className='flex flex-col items-center justify-center'>
+          <img ref={imgRef} src={playerState.item.album.images[0].url} width={550} height={550} className='rounded-xl mt-10'
+            onLoad={getColor} crossOrigin="anonymous"
+          />
           <div className='mt-5 text-center'>
             <div className='text-5xl font-atkinson-hyperlegible p-3'>{playerState.item.name}</div>
-            <div className='text-xl font-atkinson-hyperlegible'>By {playerState.item.artists[0].name}</div>
+            <div className='text-xl font-atkinson-hyperlegible'>{playerState.item.artists[0].name}</div>
           </div>
         </div>
       )}
-      
     </div>
-  )
+  );
 }
