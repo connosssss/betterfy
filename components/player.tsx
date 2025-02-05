@@ -87,12 +87,13 @@ export default function Player({ accessToken }: PlayerProps) {
   };
 
   if (!playerState?.device) return <div className='w-screen text-center'>No active device</div>;
-
+  // !!!!! Possible need to change text color based on that of the backgroujnd
   return (
     <div className="transition-colors duration-1000 ease-in-out h-screen w-full" style={{ backgroundColor: bg }}>
       {playerState.item && (
         <div className='flex flex-col items-center justify-center'>
-          <img ref={imgRef} src={playerState.item.album.images[0].url} width={550} height={550} className='rounded-xl mt-10'
+          <img ref={imgRef} src={playerState.item.album.images[0].url} width={550} height={550} 
+           className='rounded-xl mt-10 drop-shadow-2xl'
             onLoad={getColor} crossOrigin="anonymous"
           />
           <div className='mt-5 text-center'>
