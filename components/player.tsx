@@ -43,6 +43,8 @@ export default function Player({ accessToken }: PlayerProps) {
   const [isSeeking, setSeeking] = useState(false);
   const [volume, setVolume] = useState(50);
   const [isVolumeVisible, setIsVolumeVisible] = useState(false);
+  const [txtColor, setTxtColor] = useState('text-white');
+  const colorTransition = 'transition-colors duration-1000 ease-in-out';
 
   const spotifyFetch = async (endpoint: string, method = 'GET', body: any = null) => {
     const response = await fetch(`https://api.spotify.com/v1${endpoint}`, {
@@ -111,6 +113,14 @@ export default function Player({ accessToken }: PlayerProps) {
         const color = colorThiefRef.current.getColor(imgRef.current);
         const hexColor = rgbToHex(color[0], color[1], color[2]);
         setBg(hexColor);
+
+        const r = color[0] / 255;
+        const g = color[1] / 255;
+        const b = color[2] / 255;
+        const luminance = 0.299 * r + 0.587 * g + 0.114 * b;
+        const newTxtColor = luminance > 0.5 ? 'text-gray-800' : 'text-white';
+        setTxtColor(newTxtColor);
+        console.log(txtColor);
       } catch (error) {
         console.error('Error extracting color:', error);
       }
@@ -176,19 +186,21 @@ export default function Player({ accessToken }: PlayerProps) {
 
   const VolumeIcon = volume === 0 ? VolumeX : volume < 50 ? Volume1 : Volume2;
 
-  // !!!!! Possible need to change text color based on that of the backgroujnd
+  // !!!!! Possible need to change text color based on that of the backgroujnd 2/5 DONE
+
   // ALSO need to add in bug fixing to make it so it doesnt result in API error when spamming click on controls
-  // Also need to add in dynamic height changing
+  // Also need to add in dynamic height changing not done:(
   
   return (
-    <div className="transition-colors duration-1000 ease-in-out h-screen w-full" style={{ backgroundColor: bg }}>
+    <div className={"transition-colors duration-1000 ease-in-out h-screen w-full ${textColor}"} style={{ backgroundColor: bg }}>
       {playerState.item && (
         <div className='flex flex-col items-center justify-center h-full'>
           <div className=' w-full h-[90%] top-0 fixed'>
           {middleImageyTitle()}
           </div>
         
-          <div className="w-screen fixed bottom-0 left-0 right-0 h-[10%] bg-black bg-opacity-20 backdrop-blur-3xl rounded-sm ">
+          <div
+          className={`w-screen fixed bottom-0 left-0 right-0 h-[10%] bg-black bg-opacity-20 backdrop-blur-3xl rounded-sm  ${txtColor === 'text-gray-800' ?  'bg-white': 'bg-black'} ${colorTransition}`}>
           {bottomBar()}
           </div>
 
@@ -206,8 +218,12 @@ export default function Player({ accessToken }: PlayerProps) {
         onLoad={getColor} crossOrigin="anonymous"
         onClick={handleClick} />
       <div className='mt-5 text-center'>
-        <div className='text-5xl font-atkinson-hyperlegible p-3'>{playerState.item.name}</div>
-        <div className='text-xl font-atkinson-hyperlegible'>{playerState.item.artists[0].name}</div>
+       <div className={`text-5xl font-atkinson-hyperlegible p-3 ${txtColor} ${colorTransition}`}>
+          {playerState.item.name}
+       </div>
+       <div className={`text-xl font-atkinson-hyperlegible ${txtColor} ${colorTransition}`}>
+         {playerState.item.artists[0].name}
+        </div>
       </div>
     </div>;
   }
@@ -229,12 +245,14 @@ export default function Player({ accessToken }: PlayerProps) {
 
   function progressBar() {
     return <div className="flex items-center gap-4 mb-2 mt-3">
-      <span className="text-white text-sm font-atkinson-hyperlegible">
+      <span className={`text-sm font-atkinson-hyperlegible ${txtColor} ${colorTransition}`}>
         {formatTime(localProgress)}
       </span>
-      <div className="relative w-full h-2 bg-white bg-opacity-20 rounded-lg">
+      <div className={`relative w-full h-2 ${txtColor === 'text-gray-800' ? 'bg-black' : 'bg-white'} 
+      bg-opacity-20 rounded-lg ${colorTransition}`}>
         <div
-          className="absolute top-0 left-0 h-full bg-white rounded-lg transition-all duration-300"
+          className={`absolute top-0 left-0 h-full ${txtColor === 'text-gray-800' ? 'bg-black' : 'bg-white'} 
+            rounded-lg transition-all duration-300 ${colorTransition}`}
           style={{ width: `${progressPercentage}%` }} />
         <input
           type="range"
@@ -253,7 +271,7 @@ export default function Player({ accessToken }: PlayerProps) {
           } }
           className="absolute top-0 left-0 w-full h-full opacity-0 cursor-pointer" />
       </div>
-      <span className="text-white text-sm font-atkinson-hyperlegible">
+      <span className={`text-sm font-atkinson-hyperlegible ${colorTransition} ${txtColor}`}>
         {formatTime(playerState?.item?.duration_ms || 0)}
       </span>
     </div>;
@@ -264,15 +282,20 @@ export default function Player({ accessToken }: PlayerProps) {
       onMouseEnter={() => setIsVolumeVisible(true)}
       onMouseLeave={() => setIsVolumeVisible(false)}>
       <button
-        className="text-white hover:bg-white hover:bg-opacity-10 rounded-full p-2 transition-colors"
+        className={`hover:bg-white hover:bg-opacity-10 rounded-full p-2 ${colorTransition} ${txtColor}`}
         onClick={() => handleVolumeChange(volume === 0 ? 50 : 0)}
       >
         <VolumeIcon size={20} />
       </button>
-      <div className={`relative w-24 h-2 bg-white bg-opacity-20 rounded-lg ${isVolumeVisible ? 'opacity-100' : 'opacity-0'} transition-opacity duration-200`}>
+      <div className={`relative w-24 h-2 ${txtColor === 'text-gray-800' ? 'bg-black' : 'bg-white'} 
+        bg-opacity-20 rounded-lg ${isVolumeVisible ? 'opacity-100' : 'opacity-0'} 
+        transition-opacity duration-200 ${colorTransition}`}>
+
         <div
-          className="absolute top-0 left-0 h-full bg-white rounded-lg transition-all duration-300"
+          className={`absolute top-0 left-0 h-full ${txtColor === 'text-gray-800' ? 'bg-black' : 'bg-white'}
+             rounded-lg ${colorTransition}`}
           style={{ width: `${volume}%` }}
+  
         ></div>
         <input
           type="range"
@@ -290,19 +313,19 @@ export default function Player({ accessToken }: PlayerProps) {
 
       <button
         onClick={() => handleSkip('previous')}
-        className="p-3 hover:bg-white hover:bg-opacity-10 rounded-full transition-colors text-white align-middle"
+        className={`p-3 hover:bg-white hover:bg-opacity-10 rounded-full ${colorTransition} ${txtColor}`}
       >
         <SkipBack size={15} />
       </button>
       <button
         onClick={handlePlayPause}
-        className="p-3 hover:bg-white hover:bg-opacity-10 rounded-full transition-colors text-white"
+        className={`p-3 hover:bg-white hover:bg-opacity-10 rounded-full ${colorTransition} ${txtColor}`}
       >
         {playerState?.is_playing ? <Pause size={20} /> : <Play size={20} />}
       </button>
       <button
         onClick={() => handleSkip('next')}
-        className="p-3 hover:bg-white hover:bg-opacity-10 rounded-full transition-colors text-white"
+        className={`p-3 hover:bg-white hover:bg-opacity-10 rounded-full ${colorTransition} ${txtColor}`}
       >
         <SkipForward size={15} />
       </button>
