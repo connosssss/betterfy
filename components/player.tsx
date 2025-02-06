@@ -183,67 +183,94 @@ export default function Player({ accessToken }: PlayerProps) {
   return (
     <div className="transition-colors duration-1000 ease-in-out h-screen w-full" style={{ backgroundColor: bg }}>
       {playerState.item && (
-        <div className='flex flex-col items-center justify-center'>
-          
-          <img ref={imgRef} src={playerState.item.album.images[0].url} width={500} height={500}  
-           className='rounded-xl mt-10 shadow-xl hover:scale-105 transition-transform duration-300 ease-in-out'
-            onLoad={getColor} crossOrigin="anonymous"
-            onClick={handleClick}
-          />
-          <div className='mt-5 text-center'>
-            <div className='text-5xl font-atkinson-hyperlegible p-3'>{playerState.item.name}</div>
-            <div className='text-xl font-atkinson-hyperlegible'>{playerState.item.artists[0].name}</div>
+        <div className='flex flex-col items-center justify-center h-full'>
+          <div className=' w-full h-[90%] top-0 fixed'>
+          {middleImageyTitle()}
           </div>
-          
         
+          <div className="w-screen fixed bottom-0 left-0 right-0 h-[10%] bg-black bg-opacity-20 backdrop-blur-3xl rounded-sm ">
+          {bottomBar()}
+          </div>
 
-  <div className="fixed bottom-0 left-0 right-0 bg-black bg-opacity-20 backdrop-blur-3xl rounded-sm">
-    <div className="max-w-4xl mx-auto">
-   
-      <div className="flex items-center gap-4 mb-2 mt-3">
-       <span className="text-white text-sm font-atkinson-hyperlegible">
-          {formatTime(localProgress)}
-       </span>
-       <div className="relative w-full h-2 bg-white bg-opacity-20 rounded-lg">
-          <div 
-            className="absolute top-0 left-0 h-full bg-white rounded-lg transition-all duration-300"
-            style={{ width: `${progressPercentage}%` }} />
-          <input
-            type="range"
-            min={0}
-            max={playerState?.item?.duration_ms || 0}
-            value={localProgress}
-            
-            onChange={(e) => {
-              setSeeking(true);
-              setLocalProgress(Number(e.target.value));
-            }}
-
-            onMouseUp={() => {
-              handleSeek(localProgress);
-              setSeeking(false);
-            }}
-            className="absolute top-0 left-0 w-full h-full opacity-0 cursor-pointer"
-          />
-        </div>
-       <span className="text-white text-sm font-atkinson-hyperlegible">
-         {formatTime(playerState?.item?.duration_ms || 0)}
-       </span>
       </div>
+      )}
+    </div>
+  );
 
-      
-      <div className='flex justify-content-center'>
-      <div className="relative flex items-center gap-2 mb-5"
-         onMouseEnter={() => setIsVolumeVisible(true)}
-          onMouseLeave={() => setIsVolumeVisible(false)}>
-      <button 
+
+  //Different parts (should maybe make in different folders)
+  function middleImageyTitle() {
+    return <div className=' flex flex-col items-center justify-center'>
+      <img ref={imgRef} src={playerState.item.album.images[0].url} 
+        className='rounded-xl mt-16 shadow-xl hover:scale-105 transition-transform duration-300 ease-in-out h-1/4 w-1/4'
+        onLoad={getColor} crossOrigin="anonymous"
+        onClick={handleClick} />
+      <div className='mt-5 text-center'>
+        <div className='text-5xl font-atkinson-hyperlegible p-3'>{playerState.item.name}</div>
+        <div className='text-xl font-atkinson-hyperlegible'>{playerState.item.artists[0].name}</div>
+      </div>
+    </div>;
+  }
+
+  function bottomBar() {
+    return <div className="max-w-4xl mx-auto">
+
+        {progressBar()}
+
+
+        <div className='flex justify-content-center'>
+          {volumeController()}
+
+          {songController()}
+        </div>
+      </div>;
+    
+  }
+
+  function progressBar() {
+    return <div className="flex items-center gap-4 mb-2 mt-3">
+      <span className="text-white text-sm font-atkinson-hyperlegible">
+        {formatTime(localProgress)}
+      </span>
+      <div className="relative w-full h-2 bg-white bg-opacity-20 rounded-lg">
+        <div
+          className="absolute top-0 left-0 h-full bg-white rounded-lg transition-all duration-300"
+          style={{ width: `${progressPercentage}%` }} />
+        <input
+          type="range"
+          min={0}
+          max={playerState?.item?.duration_ms || 0}
+          value={localProgress}
+
+          onChange={(e) => {
+            setSeeking(true);
+            setLocalProgress(Number(e.target.value));
+          } }
+
+          onMouseUp={() => {
+            handleSeek(localProgress);
+            setSeeking(false);
+          } }
+          className="absolute top-0 left-0 w-full h-full opacity-0 cursor-pointer" />
+      </div>
+      <span className="text-white text-sm font-atkinson-hyperlegible">
+        {formatTime(playerState?.item?.duration_ms || 0)}
+      </span>
+    </div>;
+  }
+
+  function volumeController() {
+    return <div className="relative flex items-center gap-2 mb-5 "
+      onMouseEnter={() => setIsVolumeVisible(true)}
+      onMouseLeave={() => setIsVolumeVisible(false)}>
+      <button
         className="text-white hover:bg-white hover:bg-opacity-10 rounded-full p-2 transition-colors"
         onClick={() => handleVolumeChange(volume === 0 ? 50 : 0)}
       >
         <VolumeIcon size={20} />
       </button>
       <div className={`relative w-24 h-2 bg-white bg-opacity-20 rounded-lg ${isVolumeVisible ? 'opacity-100' : 'opacity-0'} transition-opacity duration-200`}>
-        <div 
+        <div
           className="absolute top-0 left-0 h-full bg-white rounded-lg transition-all duration-300"
           style={{ width: `${volume}%` }}
         ></div>
@@ -251,15 +278,16 @@ export default function Player({ accessToken }: PlayerProps) {
           type="range"
           min={0}
           max={100}
-           value={volume}
+          value={volume}
           onChange={(e) => handleVolumeChange(Number(e.target.value))}
-          className="absolute top-0 left-0 w-full h-full opacity-0 cursor-pointer"
-        />
+          className="absolute top-0 left-0 w-full h-full opacity-0 cursor-pointer" />
       </div>
-    </div>
+    </div>;
+  }
 
-    <div className="flex items-center justify-center gap-20 mb-5 pl-3 ml-40 ">
-      
+  function songController() {
+    return <div className="flex items-center justify-center gap-20 mb-5 pl-3 ml-40 ">
+
       <button
         onClick={() => handleSkip('previous')}
         className="p-3 hover:bg-white hover:bg-opacity-10 rounded-full transition-colors text-white align-middle"
@@ -278,12 +306,6 @@ export default function Player({ accessToken }: PlayerProps) {
       >
         <SkipForward size={15} />
       </button>
-    </div></div>
-   </div>
-  </div>
-          
-   </div>
-      )}
-    </div>
-  );
+    </div>;
+  }
 }
