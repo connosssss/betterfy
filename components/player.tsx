@@ -1,5 +1,7 @@
 import { useEffect, useState, useRef } from 'react';
 import dynamic from 'next/dynamic';
+import { Volume2, VolumeX, Volume1,
+  Play, Pause, SkipBack, SkipForward } from 'lucide-react';
 
 interface PlayerProps {
   accessToken: string;
@@ -39,6 +41,8 @@ export default function Player({ accessToken }: PlayerProps) {
   const colorThiefRef = useRef<any>(null);
   const [localProgress, setLocalProgress] = useState(0);
   const [isSeeking, setSeeking] = useState(false);
+  const [volume, setVolume] = useState(50);
+  const [isVolumeVisible, setIsVolumeVisible] = useState(false);
 
   const spotifyFetch = async (endpoint: string, method = 'GET', body: any = null) => {
     const response = await fetch(`https://api.spotify.com/v1${endpoint}`, {
@@ -66,7 +70,8 @@ export default function Player({ accessToken }: PlayerProps) {
     if (accessToken) {
       getPlayerState();
       //idk if making it faster ups api usage or if that is really a problem rn
-      const interval = setInterval(getPlayerState, 100);
+      //nvm it is api error 429
+      const interval = setInterval(getPlayerState, 1000);
       return () => clearInterval(interval);
     }
   }, [accessToken]);
@@ -82,8 +87,8 @@ export default function Player({ accessToken }: PlayerProps) {
   useEffect(() => {
     if (playerState?.is_playing && !isSeeking) {
       const interval = setInterval(() => {
-        setLocalProgress(prev => prev + 1000);
-      }, 1000);
+        setLocalProgress(prev => prev + 100);
+      }, 100);
       return () => clearInterval(interval);
     }
   }, [playerState?.is_playing, isSeeking]);
@@ -158,10 +163,22 @@ export default function Player({ accessToken }: PlayerProps) {
     }
   };
 
+  const handleVolumeChange = async (newVolume: number) => {
+    try {
+      setVolume(newVolume);
+      await spotifyFetch(`/me/player/volume?volume_percent=${newVolume}`, 'PUT');
+    } catch (error) {
+      console.error('Error changing volume:', error);
+    }
+  };
+
   if (!playerState?.device) return <div className='w-screen text-center'>No active device</div>;
+
+  const VolumeIcon = volume === 0 ? VolumeX : volume < 50 ? Volume1 : Volume2;
 
   // !!!!! Possible need to change text color based on that of the backgroujnd
   // ALSO need to add in bug fixing to make it so it doesnt result in API error when spamming click on controls
+  // Also need to add in dynamic height changing
   
   return (
     <div className="transition-colors duration-1000 ease-in-out h-screen w-full" style={{ backgroundColor: bg }}>
@@ -183,7 +200,7 @@ export default function Player({ accessToken }: PlayerProps) {
   <div className="fixed bottom-0 left-0 right-0 bg-black bg-opacity-20 backdrop-blur-3xl rounded-sm">
     <div className="max-w-4xl mx-auto">
    
-      <div className="flex items-center gap-4 mb-4 mt-5">
+      <div className="flex items-center gap-4 mb-2 mt-3">
        <span className="text-white text-sm font-atkinson-hyperlegible">
           {formatTime(localProgress)}
        </span>
@@ -213,21 +230,55 @@ export default function Player({ accessToken }: PlayerProps) {
          {formatTime(playerState?.item?.duration_ms || 0)}
        </span>
       </div>
+
       
-     <div className="flex items-center justify-center gap-20 mb-5">
-       <button
-         onClick={() => handleSkip('previous')}
-         className="pt-3 pb-3 pl-4 pr-4 hover:bg-white hover:bg-opacity-10 rounded-xl transition-colors text-xl"
-       >⏮</button>
-       <button
-         onClick={handlePlayPause}
-         className="pt-3 pb-3 pl-4 pr-4  hover:bg-white hover:bg-opacity-10 rounded-xl transition-colors text-xl"
-       >{playerState?.is_playing ? '⏸' : '▶'}</button>
-       <button
-         onClick={() => handleSkip('next')}
-         className="pt-3 pb-3 pl-4 pr-4 hover:bg-white hover:bg-opacity-10 rounded-xl transition-colors text-xl"
-       >⏭</button>
-     </div>
+      <div className='flex justify-content-center'>
+      <div className="relative flex items-center gap-2 mb-5"
+         onMouseEnter={() => setIsVolumeVisible(true)}
+          onMouseLeave={() => setIsVolumeVisible(false)}>
+      <button 
+        className="text-white hover:bg-white hover:bg-opacity-10 rounded-full p-2 transition-colors"
+        onClick={() => handleVolumeChange(volume === 0 ? 50 : 0)}
+      >
+        <VolumeIcon size={20} />
+      </button>
+      <div className={`relative w-24 h-2 bg-white bg-opacity-20 rounded-lg ${isVolumeVisible ? 'opacity-100' : 'opacity-0'} transition-opacity duration-200`}>
+        <div 
+          className="absolute top-0 left-0 h-full bg-white rounded-lg transition-all duration-300"
+          style={{ width: `${volume}%` }}
+        ></div>
+        <input
+          type="range"
+          min={0}
+          max={100}
+           value={volume}
+          onChange={(e) => handleVolumeChange(Number(e.target.value))}
+          className="absolute top-0 left-0 w-full h-full opacity-0 cursor-pointer"
+        />
+      </div>
+    </div>
+
+    <div className="flex items-center justify-center gap-20 mb-5 pl-3 ml-40 ">
+      
+      <button
+        onClick={() => handleSkip('previous')}
+        className="p-3 hover:bg-white hover:bg-opacity-10 rounded-full transition-colors text-white align-middle"
+      >
+        <SkipBack size={15} />
+      </button>
+      <button
+        onClick={handlePlayPause}
+        className="p-3 hover:bg-white hover:bg-opacity-10 rounded-full transition-colors text-white"
+      >
+        {playerState?.is_playing ? <Pause size={20} /> : <Play size={20} />}
+      </button>
+      <button
+        onClick={() => handleSkip('next')}
+        className="p-3 hover:bg-white hover:bg-opacity-10 rounded-full transition-colors text-white"
+      >
+        <SkipForward size={15} />
+      </button>
+    </div></div>
    </div>
   </div>
           
