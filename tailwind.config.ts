@@ -14,6 +14,7 @@ export default {
       },
       fontFamily: {
         'atkinson-hyperlegible': ['"Atkinson Hyperlegible"', 'sans-serif'],
+        'comic-sans': ['"Comic Sans MS"', 'cursive'],
       },
     },
   },

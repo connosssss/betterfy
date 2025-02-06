@@ -45,7 +45,7 @@ export default function Player({ accessToken }: PlayerProps) {
   const [isVolumeVisible, setIsVolumeVisible] = useState(false);
   const [txtColor, setTxtColor] = useState('text-white');
   const colorTransition = 'transition-colors duration-1000 ease-in-out';
-
+  
   const spotifyFetch = async (endpoint: string, method = 'GET', body: any = null) => {
     const response = await fetch(`https://api.spotify.com/v1${endpoint}`, {
       method,
@@ -63,6 +63,8 @@ export default function Player({ accessToken }: PlayerProps) {
       const text = await response.text();
       return text ? JSON.parse(text) : {};
     }
+
+    
   };
 
   const progressPercentage = (localProgress / (playerState?.item?.duration_ms || 1)) * 100;
@@ -118,7 +120,7 @@ export default function Player({ accessToken }: PlayerProps) {
         const g = color[1] / 255;
         const b = color[2] / 255;
         const luminance = 0.299 * r + 0.587 * g + 0.114 * b;
-        const newTxtColor = luminance > 0.5 ? 'text-gray-800' : 'text-white';
+        const newTxtColor = luminance > 0.7 ? 'text-gray-800' : 'text-white';
         setTxtColor(newTxtColor);
         console.log(txtColor);
       } catch (error) {
@@ -195,12 +197,12 @@ export default function Player({ accessToken }: PlayerProps) {
     <div className={"transition-colors duration-1000 ease-in-out h-screen w-full ${textColor}"} style={{ backgroundColor: bg }}>
       {playerState.item && (
         <div className='flex flex-col items-center justify-center h-full'>
-          <div className=' w-full h-[90%] top-0 fixed'>
+          <div className=' w-full h-[87%] top-0 fixed'>
           {middleImageyTitle()}
           </div>
         
           <div
-          className={`w-screen fixed bottom-0 left-0 right-0 h-[10%] bg-black bg-opacity-20 backdrop-blur-3xl rounded-sm  ${txtColor === 'text-gray-800' ?  'bg-white': 'bg-black'} ${colorTransition}`}>
+          className={`w-screen fixed bottom-0 left-0 right-0 h-[13%]  bg-opacity-20 backdrop-blur-3xl rounded-sm  ${txtColor === 'text-gray-800' ?  'bg-white': 'bg-black'} ${colorTransition}`}>
           {bottomBar()}
           </div>
 
@@ -245,7 +247,7 @@ export default function Player({ accessToken }: PlayerProps) {
 
   function progressBar() {
     return <div className="flex items-center gap-4 mb-2 mt-3">
-      <span className={`text-sm font-atkinson-hyperlegible ${txtColor} ${colorTransition}`}>
+      <span className={`text-md font-atkinson-hyperlegible ${txtColor} ${colorTransition}`}>
         {formatTime(localProgress)}
       </span>
       <div className={`relative w-full h-2 ${txtColor === 'text-gray-800' ? 'bg-black' : 'bg-white'} 
@@ -271,7 +273,7 @@ export default function Player({ accessToken }: PlayerProps) {
           } }
           className="absolute top-0 left-0 w-full h-full opacity-0 cursor-pointer" />
       </div>
-      <span className={`text-sm font-atkinson-hyperlegible ${colorTransition} ${txtColor}`}>
+      <span className={`text-md font-atkinson-hyperlegible ${colorTransition} ${txtColor}`}>
         {formatTime(playerState?.item?.duration_ms || 0)}
       </span>
     </div>;
@@ -309,25 +311,31 @@ export default function Player({ accessToken }: PlayerProps) {
   }
 
   function songController() {
-    return <div className="flex items-center justify-center gap-20 mb-5 pl-3 ml-40 ">
+    return <div className="flex items-center justify-center gap-20 mb-3 pl-3 ml-40 ">
 
       <button
         onClick={() => handleSkip('previous')}
-        className={`p-3 hover:bg-white hover:bg-opacity-10 rounded-full ${colorTransition} ${txtColor}`}
+        className={`p-3 ${txtColor === 'text-gray-800' ? 'hover:bg-black' : 'hover:bg-white'}  hover:bg-opacity-10 rounded-full ${txtColor}`}
       >
+        <div className={`${colorTransition} ${txtColor}`}>
         <SkipBack size={15} />
+        </div>
       </button>
       <button
         onClick={handlePlayPause}
-        className={`p-3 hover:bg-white hover:bg-opacity-10 rounded-full ${colorTransition} ${txtColor}`}
+        className={`p-3 ${txtColor === 'text-gray-800' ? 'hover:bg-black' : 'hover:bg-white'}  hover:bg-opacity-10 rounded-full ${txtColor}`}
       >
-        {playerState?.is_playing ? <Pause size={20} /> : <Play size={20} />}
+        <div className={`${colorTransition} ${txtColor}`}>
+        {playerState?.is_playing ? <Pause size={20} /> : <Play size={20} />} 
+        </div>
       </button>
       <button
         onClick={() => handleSkip('next')}
-        className={`p-3 hover:bg-white hover:bg-opacity-10 rounded-full ${colorTransition} ${txtColor}`}
+        className={`p-3 ${txtColor === 'text-gray-800' ? 'hover:bg-black' : 'hover:bg-white'}  hover:bg-opacity-10 rounded-full ${colorTransition} ${txtColor}`}
       >
+        <div className={`${colorTransition} ${txtColor}`}>
         <SkipForward size={15} />
+        </div>
       </button>
     </div>;
   }
