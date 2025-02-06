@@ -212,9 +212,9 @@ export default function Player({ accessToken }: PlayerProps) {
 
   //Different parts (should maybe make in different folders)
   function middleImageyTitle() {
-    return <div className=' flex flex-col items-center justify-center'>
+    return <div className=' flex flex-col items-center justify-center h-full'>
       <img ref={imgRef} src={playerState.item.album.images[0].url} 
-        className='rounded-xl mt-16 shadow-xl hover:scale-105 transition-transform duration-300 ease-in-out h-1/4 w-1/4'
+        className='rounded-xl mt-16 shadow-xl hover:scale-105 transition-transform duration-300 ease-in-out h-2/3 w-auto'
         onLoad={getColor} crossOrigin="anonymous"
         onClick={handleClick} />
       <div className='mt-5 text-center'>
