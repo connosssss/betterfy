@@ -1,7 +1,7 @@
 import { useEffect, useState, useRef } from 'react';
 import dynamic from 'next/dynamic';
 import { Volume2, VolumeX, Volume1,
-  Play, Pause, SkipBack, SkipForward } from 'lucide-react';
+  Play, Pause, SkipBack, SkipForward, ListMusic } from 'lucide-react';
 
 interface PlayerProps {
   accessToken: string;
@@ -22,7 +22,13 @@ interface PlayerState {
   progress_ms: number;
 }
 
-
+interface QueueItem {
+  name: string;
+  artists: { name: string }[];
+  album: {
+    images: { url: string }[];
+  };
+}
 
 const formatTime = (ms: number) => {
   const totalSeconds = Math.floor(ms / 1000);
@@ -45,6 +51,9 @@ export default function Player({ accessToken }: PlayerProps) {
   const [isVolumeVisible, setIsVolumeVisible] = useState(false);
   const [txtColor, setTxtColor] = useState('text-white');
   const colorTransition = 'transition-colors duration-1000 ease-in-out';
+  const [queue, setQueue] = useState<QueueItem[]>([]);
+  const [QueueVisible, setQueueVisible] = useState(false);
+  
   
   const spotifyFetch = async (endpoint: string, method = 'GET', body: any = null) => {
     const response = await fetch(`https://api.spotify.com/v1${endpoint}`, {
@@ -55,7 +64,7 @@ export default function Player({ accessToken }: PlayerProps) {
       body: body ? JSON.stringify(body) : null,
     });
 
-    if (!response.ok) {
+    if (!response.ok && response.status !== 403){
       throw new Error(`API error: ${response.status}`);
     }
 
@@ -70,15 +79,21 @@ export default function Player({ accessToken }: PlayerProps) {
   const progressPercentage = (localProgress / (playerState?.item?.duration_ms || 1)) * 100;
   
   // Use effects
+
+  //idk if making it faster ups api usage or if that is really a problem rn
+      //nvm it is api error 429
   useEffect(() => {
     if (accessToken) {
       getPlayerState();
-      //idk if making it faster ups api usage or if that is really a problem rn
-      //nvm it is api error 429
-      const interval = setInterval(getPlayerState, 1000);
+      getQueue();
+      const interval = setInterval(() => {
+        getPlayerState();
+        getQueue();
+      }, 1000);
       return () => clearInterval(interval);
     }
   }, [accessToken]);
+
 
   useEffect(() => {
     const loadColorThief = async () => {
@@ -140,6 +155,16 @@ export default function Player({ accessToken }: PlayerProps) {
       console.error('Error with player state:', error);
     }
   };
+  const getQueue = async () => {
+    try {
+      const queueData = await spotifyFetch('/me/player/queue');
+      if (queueData.queue) {
+        setQueue(queueData.queue);
+      }
+    } catch (error) {
+      console.error('Error fetching queue:', error);
+    }
+  };
 
   const handleClick = () => {
     if (playerState?.item) {
@@ -159,8 +184,8 @@ export default function Player({ accessToken }: PlayerProps) {
   
   const handleSeek = async (position: number) => {
     try {
-      await spotifyFetch(`/me/player/seek?position_ms=${position}`, 'PUT');
       setLocalProgress(position);
+      await spotifyFetch(`/me/player/seek?position_ms=${position}`, 'PUT');
     } catch (error) {
       console.error('Error seeking:', error);
     }
@@ -196,9 +221,22 @@ export default function Player({ accessToken }: PlayerProps) {
   return (
     <div className={"transition-colors duration-1000 ease-in-out h-screen w-full ${textColor}"} style={{ backgroundColor: bg }}>
       {playerState.item && (
-        <div className='flex flex-col items-center justify-center h-full'>
-          <div className=' w-full h-[87%] top-0 fixed'>
+        <div className='flex h-full'>
+        
+        
+
+        
+        <button
+          onClick={() => setQueueVisible(!QueueVisible)}
+          className={`fixed left-4 top-4 p-3 ${txtColor === 'text-gray-800' ? 'hover:bg-black' : 'hover:bg-white'} 
+            hover:bg-opacity-10 rounded-full z-10 ${colorTransition} ${txtColor}`}
+        >
+          <ListMusic size={20} />
+        </button>
+          <div className=' h-[87%] top-0 fixed flex w-full items-center justify-center'>
+          {Queue()}
           {middleImageyTitle()}
+          
           </div>
         
           <div
@@ -211,6 +249,50 @@ export default function Player({ accessToken }: PlayerProps) {
     </div>
   );
 
+
+  function Queue() {
+    return <div className={` fixed left-0 top-0 h-[87%] w-72 ${txtColor === 'text-gray-800' ? 'bg-white' : 'bg-black'} 
+           backdrop-blur-3xl transform transition-transform duration-300 ease-in-out flex flex-col bg-opacity-20 appearance-none
+          ${QueueVisible ? 'translate-x-0' : '-translate-x-full'}`}>
+
+
+      <div className={`p-4 pt-16 ${txtColor === 'text-gray-800' ? 'bg-white' : 'bg-black'} bg-opacity-20 rounded-br-xl`}>
+        <h2 className={`text-2xl font-atkinson-hyperlegible ${txtColor} ${colorTransition}`}>Queue</h2>
+      </div>
+      <div className={`flex-1 min-h-0 overflow-y-auto mt-4 mb-4
+  [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar]:h-2
+  [&::-webkit-scrollbar-track]:rounded-full
+  [&::-webkit-scrollbar-thumb]:rounded-full
+  ${txtColor === 'text-gray-800' 
+    ? '[&::-webkit-scrollbar-track]:bg-black [&::-webkit-scrollbar-track]:bg-opacity-10 [&::-webkit-scrollbar-thumb]:bg-black'
+    : '[&::-webkit-scrollbar-track]:bg-white [&::-webkit-scrollbar-track]:bg-opacity-10 [&::-webkit-scrollbar-thumb]:bg-white'
+  }
+`}>
+        <div className="p-4 space-y-4">
+          {queue.map((track, index) => (
+            <div key={index} className={`flex items-center space-x-3 p-2 r</div>ounded-lg 
+                  ${txtColor === 'text-gray-800' ? 'hover:bg-black' : 'hover:bg-white'} hover:bg-opacity-10
+                  cursor-pointer`}>
+              <img
+                src={track.album.images[2]?.url}
+                alt=""
+                className="w-10 h-10 rounded"
+                crossOrigin="anonymous" />
+              <div className="min-w-0 ">
+                <p className={`font-atkinson-hyperlegible ${txtColor} ${colorTransition} truncate`}>
+                  {track.name}
+                </p>
+                <p className={`text-sm ${txtColor} opacity-75 ${colorTransition} truncate`}>
+                  {track.artists[0].name}
+                </p>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+      
+    </div>;
+  }
 
   //Different parts (should maybe make in different folders)
   function middleImageyTitle() {
