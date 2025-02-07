@@ -209,6 +209,22 @@ export default function Player({ accessToken }: PlayerProps) {
     }
   };
 
+  // ERROR / NEED TO FIX, IF AT END OF PLAYLIST AND CLIKC A SONG
+  // IT WILL BUG OUT / STOP PLAYING ALL SONGS NO SONG IN QUEUE
+  const handleChooseTrack = async (uri: string) => {
+  try {
+    if (playerState?.context?.uri) {
+      await spotifyFetch('/me/player/play', 'PUT', {
+        context_uri: playerState.context.uri,
+        offset: { uri: uri }
+      });
+    }
+    await getPlayerState(); 
+  } catch (error) {
+    console.error('Error choosing track:', error);
+  }
+};
+
   if (!playerState?.device) return <div className='w-screen text-center'>No active device</div>;
 
   const VolumeIcon = volume === 0 ? VolumeX : volume < 50 ? Volume1 : Volume2;
@@ -272,7 +288,8 @@ export default function Player({ accessToken }: PlayerProps) {
           {queue.map((track, index) => (
             <div key={index} className={`flex items-center space-x-3 p-2 r</div>ounded-lg 
                   ${txtColor === 'text-gray-800' ? 'hover:bg-black' : 'hover:bg-white'} hover:bg-opacity-10
-                  cursor-pointer`}>
+                  cursor-pointer`}
+                  onClick={() => handleChooseTrack(`spotify:track:${track.id}`)}>
               <img
                 src={track.album.images[2]?.url}
                 alt=""
