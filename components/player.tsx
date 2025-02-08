@@ -1,7 +1,8 @@
 import { useEffect, useState, useRef } from 'react';
 import dynamic from 'next/dynamic';
 import { Volume2, VolumeX, Volume1,
-  Play, Pause, SkipBack, SkipForward, ListMusic } from 'lucide-react';
+  Play, Pause, SkipBack, SkipForward, ListMusic,
+  Maximize, Minimize } from 'lucide-react';
 
 interface PlayerProps {
   accessToken: string;
@@ -57,7 +58,8 @@ export default function Player({ accessToken }: PlayerProps) {
   const colorTransition = 'transition-colors duration-1000 ease-in-out';
   const [queue, setQueue] = useState<QueueItem[]>([]);
   const [QueueVisible, setQueueVisible] = useState(false);
-  const [playlistTracks, setPlaylistTracks] = useState<string[]>([]);
+  //const [playlistTracks, setPlaylistTracks] = useState<string[]>([]);
+  const [isFullscreen, setIsFullscreen] = useState(false);
   
   const spotifyFetch = async (endpoint: string, method = 'GET', body: any = null) => {
     const response = await fetch(`https://api.spotify.com/v1${endpoint}`, {
@@ -121,12 +123,12 @@ export default function Player({ accessToken }: PlayerProps) {
     }
   }, [playerState?.progress_ms]);
 
-  useEffect(() => {
+ /* useEffect(() => {
 
         getPlaylist();
 
     }, [playerState?.context?.uri]);
-
+*/
 
 
   //Color
@@ -173,7 +175,7 @@ export default function Player({ accessToken }: PlayerProps) {
     }
   };
 
-  const getPlaylist = async () => {
+/*  const getPlaylist = async () => {
      if (playerState?.context?.uri && playerState.context.uri.startsWith("spotify:playlist:")) {
             const playlistId = playerState.context.uri.split(":")[2];
       try {
@@ -189,7 +191,7 @@ export default function Player({ accessToken }: PlayerProps) {
     } else {
       setPlaylistTracks([]);
       }
-    };
+    }; */
 
   const handleClick = () => {
     if (playerState?.item) {
@@ -253,6 +255,19 @@ export default function Player({ accessToken }: PlayerProps) {
   if (!playerState?.device) return <div className='w-screen text-center'>No active device</div>;
 
   const VolumeIcon = volume === 0 ? VolumeX : volume < 50 ? Volume1 : Volume2; 
+
+  const toggleFullscreen = () => {
+    
+    if (!document.fullscreenElement) {
+      document.documentElement.requestFullscreen();
+      setIsFullscreen(true);
+    } 
+
+    else {
+      document.exitFullscreen();
+      setIsFullscreen(false);
+    }
+  };
   // ALSO need to add in bug fixing to make it so it doesnt result in API error when spamming click on controls
   
   return (
@@ -268,8 +283,16 @@ export default function Player({ accessToken }: PlayerProps) {
           className={`fixed left-4 top-4 p-3 ${txtColor === 'text-gray-800' ? 'hover:bg-black' : 'hover:bg-white'} 
             hover:bg-opacity-10 rounded-full z-10 ${colorTransition} ${txtColor}`}
         >
-          <ListMusic size={20} />
+          <ListMusic size={25} />
         </button>
+        
+        <button
+        onClick={toggleFullscreen}
+        className={`fixed right-4 top-4 p-3 ${txtColor === 'text-gray-800' ? 'hover:bg-black' : 'hover:bg-white'} 
+        hover:bg-opacity-10 rounded-full z-10 ${colorTransition} ${txtColor}`}>
+        {isFullscreen ? <Minimize size={25} /> : <Maximize size={25} />}
+        </button>
+
           <div className=' h-[87%] top-0 fixed flex w-full items-center justify-center'>
           {Queue()}
           {middleImageyTitle()}
@@ -288,7 +311,8 @@ export default function Player({ accessToken }: PlayerProps) {
 
 
   function Queue() {
-    const display =  playlistTracks.length !== 100 ? ` ${playlistTracks.indexOf(playerState.item.id) + 1} / ${playlistTracks.length}`: ``;
+   // const display =  playlistTracks.length !== 100 ? ` ${playlistTracks.indexOf(playerState.item.id) + 1} / ${playlistTracks.length}`: ``;
+   //<p className={`text-md h-3 mb-0 font-atkinson-hyperlegible ${txtColor} ${colorTransition}`}> {display}</p>
 //Spotify cap at 100 
     return <div className={` fixed left-0 top-0 h-[87%] w-80 ${txtColor === 'text-gray-800' ? 'bg-white' : 'bg-black'} 
            backdrop-blur-3xl transform transition-transform duration-300 ease-in-out flex flex-col bg-opacity-20 appearance-none
@@ -296,8 +320,8 @@ export default function Player({ accessToken }: PlayerProps) {
 
 
       <div className={`p-4 pt-16 ${txtColor === 'text-gray-800' ? 'bg-white' : 'bg-black'} bg-opacity-20  gap-5`}>
-        <h2 className={`text-2xl font-atkinson-hyperlegible ${txtColor} ${colorTransition}`}>Queue </h2>
-        <p className={`text-md h-3 mb-0 font-atkinson-hyperlegible ${txtColor} ${colorTransition}`}> {display}</p>
+        <h2 className={`text-2xl font-atkinson-hyperlegible ${txtColor} ${colorTransition} mt-5`}> Queue </h2>
+        
       </div>
       <div className={`flex-1 min-h-0 overflow-y-auto mt-4 mb-4
       [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar]:h-2
