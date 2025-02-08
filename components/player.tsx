@@ -20,9 +20,13 @@ interface PlayerState {
   };
   is_playing: boolean;
   progress_ms: number;
+  context?: {
+       uri: string;
+   };
 }
 
 interface QueueItem {
+  id: string;
   name: string;
   artists: { name: string }[];
   album: {
@@ -53,7 +57,7 @@ export default function Player({ accessToken }: PlayerProps) {
   const colorTransition = 'transition-colors duration-1000 ease-in-out';
   const [queue, setQueue] = useState<QueueItem[]>([]);
   const [QueueVisible, setQueueVisible] = useState(false);
-  
+  const [playlistTracks, setPlaylistTracks] = useState<string[]>([]);
   
   const spotifyFetch = async (endpoint: string, method = 'GET', body: any = null) => {
     const response = await fetch(`https://api.spotify.com/v1${endpoint}`, {
@@ -91,8 +95,7 @@ export default function Player({ accessToken }: PlayerProps) {
         getQueue();
       }, 1000);
       return () => clearInterval(interval);
-    }
-  }, [accessToken]);
+    }}, [accessToken]);
 
 
   useEffect(() => {
@@ -118,7 +121,11 @@ export default function Player({ accessToken }: PlayerProps) {
     }
   }, [playerState?.progress_ms]);
 
+  useEffect(() => {
 
+        getPlaylist();
+
+    }, [playerState?.context?.uri]);
 
 
 
@@ -165,6 +172,24 @@ export default function Player({ accessToken }: PlayerProps) {
       console.error('Error fetching queue:', error);
     }
   };
+
+  const getPlaylist = async () => {
+     if (playerState?.context?.uri && playerState.context.uri.startsWith("spotify:playlist:")) {
+            const playlistId = playerState.context.uri.split(":")[2];
+      try {
+        const data = await spotifyFetch(`/playlists/${playlistId}/tracks`);
+     if (data && data.items) {
+      const trackIds = data.items.map((item: any) => item.track?.id).filter((id: string | undefined) => id);
+      setPlaylistTracks(trackIds);
+        }
+      } catch (error) {
+      console.error('Error fetching playlist tracks:', error);
+      setPlaylistTracks([]);
+      }
+    } else {
+      setPlaylistTracks([]);
+      }
+    };
 
   const handleClick = () => {
     if (playerState?.item) {
@@ -227,12 +252,8 @@ export default function Player({ accessToken }: PlayerProps) {
 
   if (!playerState?.device) return <div className='w-screen text-center'>No active device</div>;
 
-  const VolumeIcon = volume === 0 ? VolumeX : volume < 50 ? Volume1 : Volume2;
-
-  // !!!!! Possible need to change text color based on that of the backgroujnd 2/5 DONE
-
+  const VolumeIcon = volume === 0 ? VolumeX : volume < 50 ? Volume1 : Volume2; 
   // ALSO need to add in bug fixing to make it so it doesnt result in API error when spamming click on controls
-  // Also need to add in dynamic height changing not done:(
   
   return (
     <div className={"transition-colors duration-1000 ease-in-out h-screen w-full ${textColor}"} style={{ backgroundColor: bg }}>
@@ -267,23 +288,26 @@ export default function Player({ accessToken }: PlayerProps) {
 
 
   function Queue() {
-    return <div className={` fixed left-0 top-0 h-[87%] w-72 ${txtColor === 'text-gray-800' ? 'bg-white' : 'bg-black'} 
+    const display =  playlistTracks.length !== 100 ? ` ${playlistTracks.indexOf(playerState.item.id) + 1} / ${playlistTracks.length}`: ``;
+//Spotify cap at 100 
+    return <div className={` fixed left-0 top-0 h-[87%] w-80 ${txtColor === 'text-gray-800' ? 'bg-white' : 'bg-black'} 
            backdrop-blur-3xl transform transition-transform duration-300 ease-in-out flex flex-col bg-opacity-20 appearance-none
           ${QueueVisible ? 'translate-x-0' : '-translate-x-full'}`}>
 
 
-      <div className={`p-4 pt-16 ${txtColor === 'text-gray-800' ? 'bg-white' : 'bg-black'} bg-opacity-20 rounded-br-xl`}>
-        <h2 className={`text-2xl font-atkinson-hyperlegible ${txtColor} ${colorTransition}`}>Queue</h2>
+      <div className={`p-4 pt-16 ${txtColor === 'text-gray-800' ? 'bg-white' : 'bg-black'} bg-opacity-20  gap-5`}>
+        <h2 className={`text-2xl font-atkinson-hyperlegible ${txtColor} ${colorTransition}`}>Queue </h2>
+        <p className={`text-md h-3 mb-0 font-atkinson-hyperlegible ${txtColor} ${colorTransition}`}> {display}</p>
       </div>
       <div className={`flex-1 min-h-0 overflow-y-auto mt-4 mb-4
-  [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar]:h-2
-  [&::-webkit-scrollbar-track]:rounded-full
-  [&::-webkit-scrollbar-thumb]:rounded-full
-  ${txtColor === 'text-gray-800' 
-    ? '[&::-webkit-scrollbar-track]:bg-black [&::-webkit-scrollbar-track]:bg-opacity-10 [&::-webkit-scrollbar-thumb]:bg-black'
-    : '[&::-webkit-scrollbar-track]:bg-white [&::-webkit-scrollbar-track]:bg-opacity-10 [&::-webkit-scrollbar-thumb]:bg-white'
-  }
-`}>
+      [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar]:h-2
+      [&::-webkit-scrollbar-track]:rounded-full
+      [&::-webkit-scrollbar-thumb]:rounded-full
+      ${txtColor === 'text-gray-800' 
+      ? '[&::-webkit-scrollbar-track]:bg-black [&::-webkit-scrollbar-track]:bg-opacity-10 [&::-webkit-scrollbar-thumb]:bg-black'
+      : '[&::-webkit-scrollbar-track]:bg-white [&::-webkit-scrollbar-track]:bg-opacity-10 [&::-webkit-scrollbar-thumb]:bg-white'
+      }
+      `}>
         <div className="p-4 space-y-4">
           {queue.map((track, index) => (
             <div key={index} className={`flex items-center space-x-3 p-2 r</div>ounded-lg 
