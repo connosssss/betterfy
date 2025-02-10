@@ -589,7 +589,9 @@ useEffect(() => {
         <div className="flex flex-col gap-3">
 
           <button
-            onClick={() => handleModeChange('gradient')}
+            onMouseDown={() => handleModeChange('gradient')}
+
+            onTouchStart={() => handleModeChange('gradient')}
             className={`px-3 py-1 rounded-full text-left ${
               currentBackground.mode === 'gradient' ? 'bg-opacity-40' : 'bg-opacity-10'
             } ${txtColor === 'text-gray-800' ? 'bg-white' : 'bg-black'}`}
@@ -600,7 +602,8 @@ useEffect(() => {
             </span>
           </button>
           <button
-            onClick={() => handleModeChange('solid')}
+            onMouseDown={() => handleModeChange('solid')}
+            onTouchStart={() => handleModeChange('solid')}
             className={`py-1 rounded-full text-left ${
               currentBackground.mode === 'solid' ? 'bg-opacity-40' : 'bg-opacity-10'
             } ${txtColor === 'text-gray-800' ? 'bg-white' : 'bg-black'}`}
