@@ -2,7 +2,7 @@ import { useEffect, useState, useRef } from 'react';
 import dynamic from 'next/dynamic';
 import { Volume2, VolumeX, Volume1,
   Play, Pause, SkipBack, SkipForward, ListMusic,
-  Maximize, Minimize } from 'lucide-react';
+  Maximize, Minimize, Settings } from 'lucide-react';
 
 interface PlayerProps {
   accessToken: string;
@@ -44,10 +44,42 @@ const formatTime = (ms: number) => {
 
 const ColorThief = dynamic(() => import('colorthief'), { ssr: false });
 
+const analyzeImageColors = (img: HTMLImageElement) => {
+  const canvas = document.createElement('canvas');
+  const ctx = canvas.getContext('2d');
+  if (!ctx) return '#1a1a1a';
+
+  canvas.width = img.width;
+  canvas.height = img.height;
+  ctx.drawImage(img, 0, 0);
+
+  const edgeSize = Math.floor(Math.min(img.width, img.height) * 0.1);
+
+  const getRegionAverage = (x: number, y: number, width: number, height: number) => {
+    const data = ctx.getImageData(x, y, width, height).data;
+    let r = 0, g = 0, b = 0, count = 0;
+    
+    for (let i = 0; i < data.length; i += 4) {
+      r += data[i];
+      g += data[i + 1];
+      b += data[i + 2];
+      count++;
+    }
+    
+    return `rgb(${Math.round(r/count)}, ${Math.round(g/count)}, ${Math.round(b/count)})`;
+  };
+
+  const topColor = getRegionAverage(0, 0, img.width, edgeSize);
+  const bottomColor = getRegionAverage(0, img.height - edgeSize, img.width, edgeSize);
+
+  return { topColor, bottomColor };
+};
+
+
 export default function Player({ accessToken }: PlayerProps) {
   const [playerState, setPlayerState] = useState<PlayerState | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
-  const [bg, setBg] = useState('#1a1a1a');
+  //const [bg, setBg] = useState('#1a1a1a');
   const imgRef = useRef<HTMLImageElement | null>(null);
   const colorThiefRef = useRef<any>(null);
   const [localProgress, setLocalProgress] = useState(0);
@@ -58,8 +90,16 @@ export default function Player({ accessToken }: PlayerProps) {
   const colorTransition = 'transition-colors duration-1000 ease-in-out';
   const [queue, setQueue] = useState<QueueItem[]>([]);
   const [QueueVisible, setQueueVisible] = useState(false);
-  //const [playlistTracks, setPlaylistTracks] = useState<string[]>([]);
+ // const [playlistTracks, setPlaylistTracks] = useState<string[]>([]);
   const [isFullscreen, setIsFullscreen] = useState(false);
+  
+  const [backgroundColors, setBackgroundColors] = useState({ topColor: '#1a1a1a', bottomColor: '#1a1a1a' });
+  const [SettingsOpen, setSettingsOpen] = useState(false);
+  const [currentBackground, setCurrentBackground] = useState({
+    topColor: '#1a1a1a',
+    bottomColor: '#1a1a1a',
+    mode: 'gradient'
+  });
   
   const spotifyFetch = async (endpoint: string, method = 'GET', body: any = null) => {
     const response = await fetch(`https://api.spotify.com/v1${endpoint}`, {
@@ -122,38 +162,50 @@ export default function Player({ accessToken }: PlayerProps) {
       setLocalProgress(playerState.progress_ms);
     }
   }, [playerState?.progress_ms]);
-
- /* useEffect(() => {
+/*()
+  useEffect(() => {
 
         getPlaylist();
 
     }, [playerState?.context?.uri]);
 */
-
+useEffect(() => {
+  if (playerState?.item) {
+    setCurrentBackground(prev => ({
+      ...prev,
+      topColor: backgroundColors.topColor,
+      bottomColor: backgroundColors.bottomColor
+    }));
+  }
+}, [backgroundColors, playerState?.item]);
 
   //Color
   const getColor = () => {
-    if (imgRef.current && colorThiefRef.current) {
-      //Color thief for now works buy may want to use something else in the future to get colors
-      try {
-        const color = colorThiefRef.current.getColor(imgRef.current);
-        const hexColor = rgbToHex(color[0], color[1], color[2]);
-        setBg(hexColor);
+    if (imgRef.current) {
+      const colors = analyzeImageColors(imgRef.current);
+      setBackgroundColors(colors);
+    
+   
+      setCurrentBackground(prev => ({
+       ...prev,
+       topColor: colors.topColor,
+       bottomColor: colors.bottomColor
+     }));
 
-        const r = color[0] / 255;
-        const g = color[1] / 255;
-        const b = color[2] / 255;
-        const luminance = 0.299 * r + 0.587 * g + 0.114 * b;
+   
+      const rgb = colors.topColor.match(/\d+/g);
+      if (rgb) {
+        const [r, g, b] = rgb.map(Number);
+        const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
         const newTxtColor = luminance > 0.7 ? 'text-gray-800' : 'text-white';
         setTxtColor(newTxtColor);
-        console.log(txtColor);
-      } catch (error) {
-        console.error('Error extracting color:', error);
       }
-    }
+   }
   };
+
+
     //copied/can change if needed but dont think it doesnt work 
-  const rgbToHex = (r: number, g: number, b: number) => '#' + [r, g, b].map(x => x.toString(16).padStart(2, '0')).join('');
+  //const rgbToHex = (r: number, g: number, b: number) => '#' + [r, g, b].map(x => x.toString(16).padStart(2, '0')).join('');
   //PlayerState
   const getPlayerState = async () => {
     try {
@@ -191,7 +243,7 @@ export default function Player({ accessToken }: PlayerProps) {
     } else {
       setPlaylistTracks([]);
       }
-    }; */
+    }; (--)*/
 
   const handleClick = () => {
     if (playerState?.item) {
@@ -271,27 +323,45 @@ export default function Player({ accessToken }: PlayerProps) {
   // ALSO need to add in bug fixing to make it so it doesnt result in API error when spamming click on controls
   
   return (
-    <div className={"transition-colors duration-1000 ease-in-out h-screen w-full ${textColor}"} style={{ backgroundColor: bg }}>
+    <div className={"transition-colors duration-1000 ease-in-out h-screen w-full ${textColor}"} 
+    style={{ 
+      background: currentBackground.mode === 'gradient'
+        ? `linear-gradient(to bottom, ${currentBackground.topColor} 0%, ${currentBackground.bottomColor} 100%)`
+        : currentBackground.topColor,
+      backgroundColor: '#1a1a1a',
+    }}>
+      
       {playerState.item && (
         <div className='flex h-full'>
         
         
-
+        {SettingsOpen && (
+        <>
+        <div className="fixed flex bg-black bg-opacity-50 z-20 backdrop-blur-sm items-center justify-center h-screen w-screen" onClick={() => setSettingsOpen(false)}></div>
+        <div className="flex z-30 h-1/2 w-1/2 fixed top-1/4 left-1/4">
+        
+          
+            <SettingsMenu />
+          
+        </div>
+      </>
+      )}
         
         <button
-          onClick={() => setQueueVisible(!QueueVisible)}
-          className={`fixed left-4 top-4 p-3 ${txtColor === 'text-gray-800' ? 'hover:bg-black' : 'hover:bg-white'} 
-            hover:bg-opacity-10 rounded-full z-10 ${colorTransition} ${txtColor}`}
-        >
-          <ListMusic size={25} />
-        </button>
-        
-        <button
+        onClick={() => setQueueVisible(!QueueVisible)}
+        className={`fixed left-4 top-4 p-3 ${txtColor === 'text-gray-800' ? 'hover:bg-black' : 'hover:bg-white'} 
+          hover:bg-opacity-10 rounded-full z-10 ${colorTransition} ${txtColor}`}
+      >
+        <ListMusic size={25} />
+      </button>
+      
+      <button
         onClick={toggleFullscreen}
         className={`fixed right-4 top-4 p-3 ${txtColor === 'text-gray-800' ? 'hover:bg-black' : 'hover:bg-white'} 
-        hover:bg-opacity-10 rounded-full z-10 ${colorTransition} ${txtColor}`}>
+          hover:bg-opacity-10 rounded-full z-10 ${colorTransition} ${txtColor}`}
+      >
         {isFullscreen ? <Minimize size={25} /> : <Maximize size={25} />}
-        </button>
+      </button>
 
           <div className=' h-[87%] top-0 fixed flex w-full items-center justify-center'>
           {Queue()}
@@ -378,15 +448,34 @@ export default function Player({ accessToken }: PlayerProps) {
   }
 
   function bottomBar() {
-    return <div className="max-w-4xl mx-auto">
+    return <div className="max-w-4xl mx-auto px-4 z-20">
 
         {progressBar()}
 
 
-        <div className='flex justify-content-center'>
-          {volumeController()}
+        <div className='flex flex-col sm:flex-row items-center justify-between gap-4'>
 
+        <div className="flex-1 flex justify-center sm:justify-start">
+          {volumeController()}
+        </div>
+
+          <div className="flex-1 flex justify-center">
           {songController()}
+        </div>
+
+          <div className="flex-1 flex justify-center sm:justify-end relative">
+          <button
+            onClick={() => setSettingsOpen(!SettingsOpen)}
+            className={`p-2 ${
+              txtColor === 'text-gray-800' 
+                ? 'hover:bg-black' 
+                : 'hover:bg-white'
+            } hover:bg-opacity-10 rounded-full`}
+          >
+            <Settings size={20} className={txtColor} />
+          </button>
+          
+        </div>
         </div>
       </div>;
     
@@ -458,7 +547,7 @@ export default function Player({ accessToken }: PlayerProps) {
   }
 
   function songController() {
-    return <div className="flex items-center justify-center gap-20 mb-3 pl-3 ml-40 ">
+    return <div className="flex items-center justify-center gap-20 mb-3 pl-3 ">
 
       <button
         onClick={() => handleSkip('previous')}
@@ -486,4 +575,43 @@ export default function Player({ accessToken }: PlayerProps) {
       </button>
     </div>;
   }
+  function SettingsMenu() {
+    
+    const handleModeChange = (newMode: 'gradient' | 'solid') => {
+      setCurrentBackground(prev => ({
+        ...prev,
+        mode: newMode
+      }));
+      
+    };
+    return (
+      <div className={`h-full w-full rounded-lg ${txtColor === 'text-gray-800' ? 'bg-white' : 'bg-black'} bg-opacity-40 backdrop-blur-sm shadow-lg`}>
+        <div className="flex flex-col gap-3">
+
+          <button
+            onClick={() => handleModeChange('gradient')}
+            className={`px-3 py-1 rounded-full text-left ${
+              currentBackground.mode === 'gradient' ? 'bg-opacity-40' : 'bg-opacity-10'
+            } ${txtColor === 'text-gray-800' ? 'bg-white' : 'bg-black'}`}
+          >
+            
+            <span className={`text-sm ${txtColor}`}>
+              Gradient Background
+            </span>
+          </button>
+          <button
+            onClick={() => handleModeChange('solid')}
+            className={`py-1 rounded-full text-left ${
+              currentBackground.mode === 'solid' ? 'bg-opacity-40' : 'bg-opacity-10'
+            } ${txtColor === 'text-gray-800' ? 'bg-white' : 'bg-black'}`}
+          >
+            <span className={`text-sm ${txtColor}`}>
+              Solid Background
+            </span>
+
+          </button>
+        </div>
+      </div>
+      );}
 }
+
