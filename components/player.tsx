@@ -300,18 +300,7 @@ useEffect(() => {
 
   const VolumeIcon = volume === 0 ? VolumeX : volume < 50 ? Volume1 : Volume2; 
 
-  const toggleFullscreen = () => {
-    
-    if (!document.fullscreenElement) {
-      document.documentElement.requestFullscreen();
-      setIsFullscreen(true);
-    } 
-
-    else {
-      document.exitFullscreen();
-      setIsFullscreen(false);
-    }
-  };
+  
   // ALSO need to add in bug fixing to make it so it doesnt result in API error when spamming click on controls
   
   return (
@@ -347,13 +336,7 @@ useEffect(() => {
         <ListMusic size={25} />
       </button>
       
-      <button
-        onClick={toggleFullscreen}
-        className={`fixed right-4 top-4 p-3 ${txtColor === 'text-gray-800' ? 'hover:bg-black' : 'hover:bg-white'} 
-          hover:bg-opacity-10 rounded-full z-10 ${colorTransition} ${txtColor}`}
-      >
-        {isFullscreen ? <Minimize size={25} /> : <Maximize size={25} />}
-      </button>
+      
 
           <div className=' h-[87%] top-0 fixed flex w-full items-center justify-center'>
           {Queue()}
@@ -577,6 +560,19 @@ useEffect(() => {
       }));
       
     };
+    const toggleFullscreen = () => {
+    
+      if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen();
+        setIsFullscreen(true);
+      } 
+  
+      else {
+        document.exitFullscreen();
+        setIsFullscreen(false);
+      }
+    };
+    //!!!NEED TO FOCUS ON NOT JUST USING DIVS
     return (
       <div className={`h-full w-full rounded-lg ${txtColor === 'text-gray-800' ? 'bg-white' : 'bg-black'} bg-opacity-40 backdrop-blur-sm shadow-lg`}>
         <div className="flex flex-col gap-3">
@@ -606,6 +602,24 @@ useEffect(() => {
             </span>
 
           </button>
+          <div className="h-px bg-current opacity-10 my-2"></div>
+
+        <button
+          onMouseDown={toggleFullscreen}
+          onTouchStart={toggleFullscreen}
+          className={` py-1 rounded-lg text-left flex items-center justify-between
+            ${txtColor === 'text-gray-800' ? 'hover:bg-black' : 'hover:bg-white'} 
+            hover:bg-opacity-10`}
+        >
+          <span className={`text-sm ${txtColor}`}>
+            {isFullscreen ? 'Exit Fullscreen' : 'Enter Fullscreen'}
+          </span>
+          {isFullscreen ? 
+            <Minimize size={18} className={txtColor} /> : 
+            <Maximize size={18} className={txtColor} />
+          }
+        </button>
+      
         </div>
       </div>
       );}
