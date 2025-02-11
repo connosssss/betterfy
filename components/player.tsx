@@ -42,8 +42,6 @@ const formatTime = (ms: number) => {
   return `${minutes}:${seconds.toString().padStart(2, '0')}`;
 };
 
-const ColorThief = dynamic(() => import('colorthief'), { ssr: false });
-
 const analyzeImageColors = (img: HTMLImageElement) => {
   const canvas = document.createElement('canvas');
   const ctx = canvas.getContext('2d');
@@ -81,7 +79,6 @@ export default function Player({ accessToken }: PlayerProps) {
   const [isPlaying, setIsPlaying] = useState(false);
   //const [bg, setBg] = useState('#1a1a1a');
   const imgRef = useRef<HTMLImageElement | null>(null);
-  const colorThiefRef = useRef<any>(null);
   const [localProgress, setLocalProgress] = useState(0);
   const [isSeeking, setSeeking] = useState(false);
   const [volume, setVolume] = useState(50);
@@ -93,7 +90,11 @@ export default function Player({ accessToken }: PlayerProps) {
  // const [playlistTracks, setPlaylistTracks] = useState<string[]>([]);
   const [isFullscreen, setIsFullscreen] = useState(false);
   
-  const [backgroundColors, setBackgroundColors] = useState({ topColor: '#1a1a1a', bottomColor: '#1a1a1a' });
+  const [backgroundColors, setBackgroundColors] = useState<BackgroundColors>({ 
+  edgeTop: '#1a1a1a', 
+  edgeBottom: '#1a1a1a',
+  dominant: '#1a1a1a'
+});
   const [SettingsOpen, setSettingsOpen] = useState(false);
   const [currentBackground, setCurrentBackground] = useState({
     topColor: '#1a1a1a',
@@ -138,15 +139,6 @@ export default function Player({ accessToken }: PlayerProps) {
       }, 1000);
       return () => clearInterval(interval);
     }}, [accessToken]);
-
-
-  useEffect(() => {
-    const loadColorThief = async () => {
-      const module = await import('colorthief');
-      colorThiefRef.current = new module.default();
-    };
-    loadColorThief();
-  }, []);
 
   useEffect(() => {
     if (playerState?.is_playing && !isSeeking) {
@@ -402,6 +394,7 @@ useEffect(() => {
       : '[&::-webkit-scrollbar-track]:bg-white [&::-webkit-scrollbar-track]:bg-opacity-10 [&::-webkit-scrollbar-thumb]:bg-white'
       }
       `}>
+
         <div className="p-4 space-y-4">
           {queue.map((track, index) => (
             <div key={index} className={`flex items-center space-x-3 p-2 r</div>ounded-lg 
@@ -409,7 +402,7 @@ useEffect(() => {
                   cursor-pointer`}
                   onClick={() => handleChooseTrack(`spotify:track:${track.id}`)}>
               <img
-                src={track.album.images[2]?.url}
+                src={track.album.images[0]?.url}
                 alt=""
                 className="w-10 h-10 rounded"
                 crossOrigin="anonymous" />
