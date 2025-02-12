@@ -3,9 +3,9 @@ import { signIn } from "next-auth/react";
 
 export default function Login() {
   const handleLogin = () => {
-    signIn("spotify", { callbackUrl: "http://localhost:3000" });
+    signIn("spotify", { callbackUrl: "http://localhost:3000/" });
   };
-  
+
   return (
     <div className="flex items-center justify-center w-full h-screen animate-background  ">
       <div className="bg-black bg-opacity-40 h-2/3 w-1/2 flex flex-col rounded-3xl text-center justify-start items-center gap-10">
@@ -18,13 +18,13 @@ export default function Login() {
         Login with Spotify
       </button>
       <button
-       
+        onClick={() => window.location.href = "/about"}
         className=" text-lg font-semibold text-white  bg-black bg-opacity-40 hover:bg-opacity-20 rounded-lg  transition-all duration-300 font-atkinson-hyperlegible px-5 py-4
         w-1/3">
         About
       </button>
       </div>
-      
+
     </div>
   );
 }
