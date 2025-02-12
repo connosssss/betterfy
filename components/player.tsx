@@ -2,7 +2,7 @@ import { useEffect, useState, useRef } from 'react';
 import dynamic from 'next/dynamic';
 import { Volume2, VolumeX, Volume1,
   Play, Pause, SkipBack, SkipForward, ListMusic,
-  Maximize, Minimize, Settings, Library } from 'lucide-react';
+  Maximize, Minimize, Settings } from 'lucide-react';
 
 interface PlayerProps {
   accessToken: string;
@@ -33,19 +33,6 @@ interface QueueItem {
   album: {
     images: { url: string }[];
   };
-}
-
-interface PlaylistItem {
-  id: string;
-  name: string;
-  images: { url: string }[];
-  tracks: {
-    total: number;
-  };
-}
-
-interface PlayerProps {
-  accessToken: string;
 }
 
 const formatTime = (ms: number) => {
@@ -108,15 +95,12 @@ export default function Player({ accessToken }: PlayerProps) {
   edgeBottom: '#1a1a1a',
   dominant: '#1a1a1a'
 });
-  const [settingsOpen, setSettingsOpen] = useState(false);
+  const [SettingsOpen, setSettingsOpen] = useState(false);
   const [currentBackground, setCurrentBackground] = useState({
     topColor: '#1a1a1a',
     bottomColor: '#1a1a1a',
     mode: 'gradient'
   });
-
-  const [playlists, setPlaylists] = useState<PlaylistItem[]>([]);
-  const [isPlaylistVisible, setIsPlaylistVisible] = useState(false);
   
   const spotifyFetch = async (endpoint: string, method = 'GET', body: any = null) => {
     const response = await fetch(`https://api.spotify.com/v1${endpoint}`, {
@@ -177,28 +161,15 @@ export default function Player({ accessToken }: PlayerProps) {
 
     }, [playerState?.context?.uri]);
 */
-  useEffect(() => {
-    if (playerState?.item) {
-      setCurrentBackground(prev => ({
-        ...prev,
-        topColor: backgroundColors.topColor,
-        bottomColor: backgroundColors.bottomColor
-      }));
-    }
-  }, [backgroundColors, playerState?.item]);
-
-  useEffect(() => {
-    if (accessToken) {
-      getPlayerState();
-      getQueue();
-      getPlaylists(); 
-      const interval = setInterval(() => {
-        getPlayerState();
-        getQueue();
-      }, 1000);
-      return () => clearInterval(interval);
-    }
-  }, [accessToken]);
+useEffect(() => {
+  if (playerState?.item) {
+    setCurrentBackground(prev => ({
+      ...prev,
+      topColor: backgroundColors.topColor,
+      bottomColor: backgroundColors.bottomColor
+    }));
+  }
+}, [backgroundColors, playerState?.item]);
 
   //Color
   const getColor = () => {
@@ -214,7 +185,7 @@ export default function Player({ accessToken }: PlayerProps) {
      }));
 
    
-      const rgb = colors.bottomColor.match(/\d+/g);
+      const rgb = colors.topColor.match(/\d+/g);
       if (rgb) {
         const [r, g, b] = rgb.map(Number);
         const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
@@ -325,30 +296,6 @@ export default function Player({ accessToken }: PlayerProps) {
   }
 };
 
-  const getPlaylists = async () => {
-    try {
-      const playlistData = await spotifyFetch('/me/playlists');
-      if (playlistData.items) {
-        setPlaylists(playlistData.items);
-      }
-    } 
-    catch (error) {
-      console.error('Error fetching playlists:', error);
-    }
-  };
-
-  const handlePlaylistSelect = async (playlistUri: string) => {
-    try {
-      await spotifyFetch('/me/player/play', 'PUT', {
-        context_uri: playlistUri
-      });
-      await getPlayerState();
-    }
-     catch (error) {
-      console.error('Error playing playlist:', error);
-    }
-  };
-
   if (!playerState?.device) return <div className='w-screen text-center'>No active device</div>;
 
   const VolumeIcon = volume === 0 ? VolumeX : volume < 50 ? Volume1 : Volume2; 
@@ -380,7 +327,7 @@ export default function Player({ accessToken }: PlayerProps) {
         <div className='flex h-full'>
         
         
-        {settingsOpen && (
+        {SettingsOpen && (
         <>
         <div className="fixed flex bg-black bg-opacity-50 z-20 backdrop-blur-sm items-center justify-center h-screen w-screen" onClick={() => setSettingsOpen(false)}></div>
         <div className="flex z-30 h-1/2 w-1/2 fixed top-1/4 left-1/4">
@@ -391,13 +338,6 @@ export default function Player({ accessToken }: PlayerProps) {
         </div>
       </>
       )}
-      <button
-            onClick={() => setIsPlaylistVisible(!isPlaylistVisible)}
-            className={`fixed right-4 top-4 p-3 ${txtColor === 'text-gray-800' ? 'hover:bg-black' : 'hover:bg-white'} 
-              hover:bg-opacity-10 rounded-full z-10 ${colorTransition} ${txtColor}`}
-          >
-            <Library size={25} />
-          </button>
         
         <button
         onClick={() => setQueueVisible(!QueueVisible)}
@@ -418,7 +358,7 @@ export default function Player({ accessToken }: PlayerProps) {
           <div className=' h-[87%] top-0 fixed flex w-full items-center justify-center'>
           {Queue()}
           {middleImageyTitle()}
-          {Playlists()}
+          
           </div>
         
           <div
@@ -445,7 +385,7 @@ export default function Player({ accessToken }: PlayerProps) {
         <h2 className={`text-2xl font-atkinson-hyperlegible ${txtColor} ${colorTransition} mt-5`}> Queue </h2>
         
       </div>
-      <div className={`flex-1 min-h-0 overflow-y-auto mt-4 mb-4 mr-2
+      <div className={`flex-1 min-h-0 overflow-y-auto mt-4 mb-4
       [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar]:h-2
       [&::-webkit-scrollbar-track]:rounded-full
       [&::-webkit-scrollbar-thumb]:rounded-full
@@ -518,7 +458,7 @@ export default function Player({ accessToken }: PlayerProps) {
 
           <div className="flex-1 flex justify-center sm:justify-end relative">
           <button
-            onClick={() => setSettingsOpen(!settingsOpen)}
+            onClick={() => setSettingsOpen(!SettingsOpen)}
             className={`p-2 ${
               txtColor === 'text-gray-800' 
                 ? 'hover:bg-black' 
@@ -569,7 +509,7 @@ export default function Player({ accessToken }: PlayerProps) {
   }
 
   function volumeController() {
-    return <div className="relative flex items-center gap-2  "
+    return <div className="relative flex items-center gap-2 mb-5 "
       onMouseEnter={() => setIsVolumeVisible(true)}
       onMouseLeave={() => setIsVolumeVisible(false)}>
       <button
@@ -600,7 +540,7 @@ export default function Player({ accessToken }: PlayerProps) {
   }
 
   function songController() {
-    return <div className="flex items-center justify-center gap-20 pl-3 ">
+    return <div className="flex items-center justify-center gap-20 mb-3 pl-3 ">
 
       <button
         onClick={() => handleSkip('previous')}
@@ -670,7 +610,7 @@ export default function Player({ accessToken }: PlayerProps) {
 
         <button
           onMouseDown={toggleFullscreen}
-          
+          onTouchStart={toggleFullscreen}
           className={` py-1 rounded-lg text-left flex items-center justify-between
             ${txtColor === 'text-gray-800' ? 'hover:bg-black' : 'hover:bg-white'} 
             hover:bg-opacity-10`}
@@ -687,55 +627,5 @@ export default function Player({ accessToken }: PlayerProps) {
         </div>
       </div>
       );}
-
-      function Playlists() {
-        return (
-          <div className={`fixed right-0 top-0 h-[87%] w-80 ${txtColor === 'text-gray-800' ? 'bg-white' : 'bg-black'} 
-            backdrop-blur-3xl transform transition-transform duration-300 ease-in-out flex flex-col bg-opacity-20
-            ${isPlaylistVisible ? 'translate-x-0' : 'translate-x-full'}`}>
-            
-            <div className={`p-4 pt-16 ${txtColor === 'text-gray-800' ? 'bg-white' : 'bg-black'} bg-opacity-20 gap-5`}>
-              <h2 className={`text-2xl font-atkinson-hyperlegible text-end ${txtColor} ${colorTransition} mt-5`}>Your Library</h2>
-            </div>
-    
-            <div className={`flex-1 min-h-0 overflow-y-auto mt-4 mb-4 mr-2
-              [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar]:h-2
-              [&::-webkit-scrollbar-track]:rounded-full
-              [&::-webkit-scrollbar-thumb]:rounded-full
-              ${txtColor === 'text-gray-800' 
-                ? '[&::-webkit-scrollbar-track]:bg-black [&::-webkit-scrollbar-track]:bg-opacity-10 [&::-webkit-scrollbar-thumb]:bg-black'
-                : '[&::-webkit-scrollbar-track]:bg-white [&::-webkit-scrollbar-track]:bg-opacity-10 [&::-webkit-scrollbar-thumb]:bg-white'
-              }`}>
-              
-              <div className="p-4 space-y-4 ">
-                {playlists.map((playlist) => (
-                  <div 
-                    key={playlist.id}
-                    className={`flex items-center space-x-3 p-2 rounded-lg 
-                      ${txtColor === 'text-gray-800' ? 'hover:bg-black' : 'hover:bg-white'} hover:bg-opacity-10
-                      cursor-pointer`}
-                    onClick={() => handlePlaylistSelect(`spotify:playlist:${playlist.id}`)}
-                  >
-                    <img
-                      src={playlist.images[0]?.url}
-                      alt=""
-                      className="w-10 h-10 rounded"
-                      crossOrigin="anonymous"
-                    />
-                    <div className="min-w-0">
-                      <p className={`font-atkinson-hyperlegible ${txtColor} ${colorTransition} truncate`}>
-                        {playlist.name}
-                      </p>
-                      <p className={`text-sm ${txtColor} opacity-75 ${colorTransition}`}>
-                        {playlist.tracks.total} tracks
-                      </p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        );
-      }
 }
 
