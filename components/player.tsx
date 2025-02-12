@@ -440,7 +440,11 @@ export default function Player({ accessToken }: PlayerProps) {
 
         <div className="p-4 space-y-4">
           {queue.map((track, index) => (
+<<<<<<< HEAD
             <div key={index} className={`flex items-center space-x-3 p-2 rounded-lg 
+=======
+            <div key={index} className={`flex items-center space-x-3 p-2 r</div>ounded-lg 
+>>>>>>> ba131c55c1199d6f359d84dfe2a5f075b6cdabb3
                   ${txtColor === 'text-gray-800' ? 'hover:bg-black' : 'hover:bg-white'} hover:bg-opacity-10
                   cursor-pointer`}
                   onClick={() => handleChooseTrack(`spotify:track:${track.id}`)}>
