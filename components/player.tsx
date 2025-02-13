@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState, useRef, useCallback } from 'react';
 import dynamic from 'next/dynamic';
 import { Volume2, VolumeX, Volume1,
   Play, Pause, SkipBack, SkipForward, ListMusic,
@@ -47,6 +47,172 @@ interface PlaylistItem {
 interface PlayerProps {
   accessToken: string;
 }
+
+interface TextColorMode {
+  mode: 'auto' | 'white' | 'black';
+}
+
+const SettingsMenu = ({
+  txtColor,
+  colorTransition,
+  currentBackground,
+  setCurrentBackground,
+  textColorMode,
+  setTextColorMode,
+  setTxtColor,
+  isFullscreen,
+  setIsFullscreen,
+  getColor
+}: {
+  txtColor: string;
+  colorTransition: string;
+  currentBackground: { mode: 'gradient' | 'solid'; topColor: string; bottomColor: string };
+  setCurrentBackground: (value: any) => void;
+  textColorMode: TextColorMode['mode'];
+  setTextColorMode: (value: TextColorMode['mode']) => void;
+  setTxtColor: (value: string) => void;
+  isFullscreen: boolean;
+  setIsFullscreen: (value: boolean) => void;
+  getColor: () => void;
+}) => {
+  const handleModeChange = (newMode: 'gradient' | 'solid') => {
+    setCurrentBackground(prev => ({
+      ...prev,
+      mode: newMode
+    }));
+  };
+
+  const handleTextColorChange = (mode: TextColorMode['mode']) => {
+    setTextColorMode(mode);
+    if (mode === 'white') setTxtColor('text-white');
+    if (mode === 'black') setTxtColor('text-gray-800');
+    if (mode === 'auto') getColor();
+  };
+
+  const toggleFullscreen = () => {
+    if (!document.fullscreenElement) {
+      document.documentElement.requestFullscreen();
+      setIsFullscreen(true);
+    } else {
+      document.exitFullscreen();
+      setIsFullscreen(false);
+    }
+  };
+
+  return (
+    <div 
+      className={`fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 
+        w-80 max-h-[80vh] rounded-lg 
+        ${txtColor === 'text-gray-800' ? 'bg-white' : 'bg-black'} 
+        bg-opacity-40 backdrop-blur-sm shadow-lg overflow-hidden flex flex-col z-30`}
+    >
+      <div className="p-6">
+        <h2 className={`text-2xl font-atkinson-hyperlegible ${txtColor} ${colorTransition} mb-4`}>
+          Settings
+        </h2>
+      </div>
+      
+      <div 
+        className={`flex-1 overflow-y-auto px-6 pb-6
+          [&::-webkit-scrollbar]:w-2 
+          [&::-webkit-scrollbar]:h-2
+          [&::-webkit-scrollbar-track]:rounded-full
+          [&::-webkit-scrollbar-thumb]:rounded-full
+          ${txtColor === 'text-gray-800' 
+            ? '[&::-webkit-scrollbar-track]:bg-black [&::-webkit-scrollbar-track]:bg-opacity-10 [&::-webkit-scrollbar-thumb]:bg-black'
+            : '[&::-webkit-scrollbar-track]:bg-white [&::-webkit-scrollbar-track]:bg-opacity-10 [&::-webkit-scrollbar-thumb]:bg-white'
+          }`}
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="space-y-6">
+          <div>
+            <h3 className={`text-lg font-medium mb-3 ${txtColor}`}>Background Style</h3>
+            <div className="flex flex-col gap-2">
+              <button
+                onClick={() => handleModeChange('gradient')}
+                className={`px-4 py-2 rounded-lg text-left transition-all duration-200 ${
+                  currentBackground.mode === 'gradient' 
+                    ? `${txtColor === 'text-gray-800' ? 'bg-black' : 'bg-white'} bg-opacity-20` 
+                    : `${txtColor === 'text-gray-800' ? 'hover:bg-black' : 'hover:bg-white'} hover:bg-opacity-10`
+                }`}
+              >
+                <span className={`text-sm ${txtColor}`}>Gradient</span>
+              </button>
+              <button
+                onClick={() => handleModeChange('solid')}
+                className={`px-4 py-2 rounded-lg text-left transition-all duration-200 ${
+                  currentBackground.mode === 'solid' 
+                    ? `${txtColor === 'text-gray-800' ? 'bg-black' : 'bg-white'} bg-opacity-20` 
+                    : `${txtColor === 'text-gray-800' ? 'hover:bg-black' : 'hover:bg-white'} hover:bg-opacity-10`
+                }`}
+              >
+                <span className={`text-sm ${txtColor}`}>Solid Color</span>
+              </button>
+            </div>
+          </div>
+          
+          <div>
+              <h3 className={`text-lg font-medium mb-3 ${txtColor}`}>Text Color</h3>
+              <div className="flex flex-col gap-2">
+                <button
+                  onMouseDown={() => handleTextColorChange('auto')}
+                  onTouchStart={() => handleTextColorChange('auto')}
+                  className={`px-4 py-2 rounded-lg text-left transition-all duration-200 ${
+                    textColorMode === 'auto' 
+                      ? `${txtColor === 'text-gray-800' ? 'bg-black' : 'bg-white'} bg-opacity-20` 
+                      : `${txtColor === 'text-gray-800' ? 'hover:bg-black' : 'hover:bg-white'} hover:bg-opacity-10`
+                  }`}
+                >
+                  <span className={`text-sm ${txtColor}`}>Auto (Based on BG brightness) </span>
+                </button>
+                <button
+                  onMouseDown={() => handleTextColorChange('white')}
+                  onTouchStart={() => handleTextColorChange('white')}
+                  className={`px-4 py-2 rounded-lg text-left transition-all duration-200 ${
+                    textColorMode === 'white' 
+                      ? `${txtColor === 'text-gray-800' ? 'bg-black' : 'bg-white'} bg-opacity-20` 
+                      : `${txtColor === 'text-gray-800' ? 'hover:bg-black' : 'hover:bg-white'} hover:bg-opacity-10`
+                  }`}
+                >
+                  <span className={`text-sm ${txtColor}`}>White</span>
+                </button>
+                <button
+                  onClick={() => handleTextColorChange('black')}
+                  className={`px-4 py-2 rounded-lg text-left transition-all duration-200 ${
+                    textColorMode === 'black' 
+                      ? `${txtColor === 'text-gray-800' ? 'bg-black' : 'bg-white'} bg-opacity-20` 
+                      : `${txtColor === 'text-gray-800' ? 'hover:bg-black' : 'hover:bg-white'} hover:bg-opacity-10`
+                  }`}
+                >
+                  <span className={`text-sm ${txtColor}`}>Black</span>
+                </button>
+              </div>
+            </div>
+
+          <div>
+            <h3 className={`text-lg font-medium mb-3 ${txtColor}`}>Display</h3>
+            <button
+              onClick={toggleFullscreen}
+              className={`w-full px-4 py-2 rounded-lg text-left transition-all duration-200 flex items-center justify-between
+                ${txtColor === 'text-gray-800' ? 'hover:bg-black' : 'hover:bg-white'} hover:bg-opacity-10`}
+            >
+
+              <span className={`text-sm ${txtColor}`}>
+                {isFullscreen ? 'Exit Fullscreen' : 'Enter Fullscreen'}
+              </span>
+
+              {isFullscreen ? 
+                <Minimize size={18} className={txtColor} /> : 
+                <Maximize size={18} className={txtColor} />
+              }
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 
 const formatTime = (ms: number) => {
   const totalSeconds = Math.floor(ms / 1000);
@@ -117,6 +283,7 @@ export default function Player({ accessToken }: PlayerProps) {
 
   const [playlists, setPlaylists] = useState<PlaylistItem[]>([]);
   const [isPlaylistVisible, setIsPlaylistVisible] = useState(false);
+  const [textColorMode, setTextColorMode] = useState<TextColorMode['mode']>('auto');
   
   const spotifyFetch = async (endpoint: string, method = 'GET', body: any = null) => {
     const response = await fetch(`https://api.spotify.com/v1${endpoint}`, {
@@ -187,41 +354,33 @@ export default function Player({ accessToken }: PlayerProps) {
     }
   }, [backgroundColors, playerState?.item]);
 
-  useEffect(() => {
-    if (accessToken) {
-      getPlayerState();
-      getQueue();
-      getPlaylists(); 
-      const interval = setInterval(() => {
-        getPlayerState();
-        getQueue();
-      }, 1000);
-      return () => clearInterval(interval);
-    }
-  }, [accessToken]);
+ 
 
   //Color
   const getColor = () => {
     if (imgRef.current) {
       const colors = analyzeImageColors(imgRef.current);
       setBackgroundColors(colors);
-    
-   
+      
       setCurrentBackground(prev => ({
-       ...prev,
-       topColor: colors.topColor,
-       bottomColor: colors.bottomColor
-     }));
-
-   
-      const rgb = colors.bottomColor.match(/\d+/g);
-      if (rgb) {
-        const [r, g, b] = rgb.map(Number);
-        const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
-        const newTxtColor = luminance > 0.7 ? 'text-gray-800' : 'text-white';
-        setTxtColor(newTxtColor);
+        ...prev,
+        topColor: colors.topColor,
+        bottomColor: colors.bottomColor
+      }));
+  
+      
+      if (textColorMode === 'auto') {
+        const rgb = colors.bottomColor.match(/\d+/g);
+        if (rgb) {
+          const [r, g, b] = rgb.map(Number);
+          const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+          const newTxtColor = luminance > 0.7 ? 'text-gray-800' : 'text-white';
+          setTxtColor(newTxtColor);
+        }
+      } else {
+        setTxtColor(textColorMode === 'white' ? 'text-white' : 'text-gray-800');
       }
-   }
+    }
   };
 
 
@@ -354,8 +513,8 @@ export default function Player({ accessToken }: PlayerProps) {
   const VolumeIcon = volume === 0 ? VolumeX : volume < 50 ? Volume1 : Volume2; 
 
   
-  // ALSO need to add in bug fixing to make it so it doesnt result in API error when spamming click on controls
-  
+ 
+
   return (
     <div className={"transition-colors duration-1000 ease-in-out h-screen w-full ${textColor}"} 
     style={{ 
@@ -370,16 +529,25 @@ export default function Player({ accessToken }: PlayerProps) {
         
         
         {settingsOpen && (
-        <>
-        <div className="fixed flex bg-black bg-opacity-50 z-20 backdrop-blur-sm items-center justify-center h-screen w-screen" onClick={() => setSettingsOpen(false)}></div>
-        <div className="flex z-30 h-1/2 w-1/2 fixed top-1/4 left-1/4">
-        
-          
-            <SettingsMenu />
-          
-        </div>
-      </>
-      )}
+            <>
+              <div 
+                className="fixed inset-0 bg-black bg-opacity-50 z-20 backdrop-blur-sm"
+                onClick={() => setSettingsOpen(false)}
+              />
+              <SettingsMenu
+                txtColor={txtColor}
+                colorTransition={colorTransition}
+                currentBackground={currentBackground}
+                setCurrentBackground={setCurrentBackground}
+                textColorMode={textColorMode}
+                setTextColorMode={setTextColorMode}
+                setTxtColor={setTxtColor}
+                isFullscreen={isFullscreen}
+                setIsFullscreen={setIsFullscreen}
+                getColor={getColor}
+              />
+            </>
+          )}
       <button
             onClick={() => setIsPlaylistVisible(!isPlaylistVisible)}
             className={`fixed right-4 top-4 p-3 ${txtColor === 'text-gray-800' ? 'hover:bg-black' : 'hover:bg-white'} 
@@ -515,8 +683,132 @@ export default function Player({ accessToken }: PlayerProps) {
         </div>
       </div>;
     
-  }
+  }/*
+  function SettingsMenu() {
+    const handleModeChange = (newMode: 'gradient' | 'solid') => {
+      setCurrentBackground(prev => ({
+        ...prev,
+        mode: newMode
+      }));
+    };
 
+    const handleTextColorChange = (mode: TextColorMode['mode']) => {
+      setTextColorMode(mode);
+      if (mode === 'white') setTxtColor('text-white');
+      if (mode === 'black') setTxtColor('text-gray-800');
+      if (mode === 'auto') getColor();
+    };
+
+    const toggleFullscreen = () => {
+      if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen();
+        setIsFullscreen(true);
+      } else {
+        document.exitFullscreen();
+        setIsFullscreen(false);
+      }
+    };
+
+    return (
+      <div className={`h-full w-full rounded-lg ${txtColor === 'text-gray-800' ? 'bg-white' : 'bg-black'} bg-opacity-40 backdrop-blur-sm shadow-lg overflow-hidden flex flex-col`}>
+        <div className="p-6">
+          <h2 className={`text-2xl font-atkinson-hyperlegible ${txtColor} ${colorTransition} mb-4`}>Settings</h2>
+        </div>
+        <div className={`flex-1 overflow-y-auto px-6 pb-6
+          [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar]:h-2
+          [&::-webkit-scrollbar-track]:rounded-full
+          [&::-webkit-scrollbar-thumb]:rounded-full
+          ${txtColor === 'text-gray-800' 
+            ? '[&::-webkit-scrollbar-track]:bg-black [&::-webkit-scrollbar-track]:bg-opacity-10 [&::-webkit-scrollbar-thumb]:bg-black'
+            : '[&::-webkit-scrollbar-track]:bg-white [&::-webkit-scrollbar-track]:bg-opacity-10 [&::-webkit-scrollbar-thumb]:bg-white'
+          }`}>
+          <div className="space-y-6">
+            <div>
+              <h3 className={`text-lg font-medium mb-3 ${txtColor}`}>Background Style</h3>
+              <div className="flex flex-col gap-2">
+                <button
+                  onMouseDown={() => handleModeChange('gradient')}
+                  onTouchStart={() => handleModeChange('gradient')}
+                  className={`px-4 py-2 rounded-lg text-left transition-all duration-200 ${
+                    currentBackground.mode === 'gradient' 
+                      ? `${txtColor === 'text-gray-800' ? 'bg-black' : 'bg-white'} bg-opacity-20` 
+                      : `${txtColor === 'text-gray-800' ? 'hover:bg-black' : 'hover:bg-white'} hover:bg-opacity-10`
+                  }`}
+                >
+                  <span className={`text-sm ${txtColor}`}>Gradient</span>
+                </button>
+                <button
+                  onMouseDown={() => handleModeChange('solid')}
+                  onTouchStart={() => handleModeChange('solid')}
+                  className={`px-4 py-2 rounded-lg text-left transition-all duration-200 ${
+                    currentBackground.mode === 'solid' 
+                      ? `${txtColor === 'text-gray-800' ? 'bg-black' : 'bg-white'} bg-opacity-20` 
+                      : `${txtColor === 'text-gray-800' ? 'hover:bg-black' : 'hover:bg-white'} hover:bg-opacity-10`
+                  }`}
+                >
+                  <span className={`text-sm ${txtColor}`}>Solid Color</span>
+                </button>
+              </div>
+            </div>
+            <div>
+              <h3 className={`text-lg font-medium mb-3 ${txtColor}`}>Text Color</h3>
+              <div className="flex flex-col gap-2">
+                <button
+                  onMouseDown={() => handleTextColorChange('auto')}
+                  onTouchStart={() => handleTextColorChange('auto')}
+                  className={`px-4 py-2 rounded-lg text-left transition-all duration-200 ${
+                    textColorMode === 'auto' 
+                      ? `${txtColor === 'text-gray-800' ? 'bg-black' : 'bg-white'} bg-opacity-20` 
+                      : `${txtColor === 'text-gray-800' ? 'hover:bg-black' : 'hover:bg-white'} hover:bg-opacity-10`
+                  }`}
+                >
+                  <span className={`text-sm ${txtColor}`}>Auto (Based on Background)</span>
+                </button>
+                <button
+                  onMouseDown={() => handleTextColorChange('white')}
+                  onTouchStart={() => handleTextColorChange('white')}
+                  className={`px-4 py-2 rounded-lg text-left transition-all duration-200 ${
+                    textColorMode === 'white' 
+                      ? `${txtColor === 'text-gray-800' ? 'bg-black' : 'bg-white'} bg-opacity-20` 
+                      : `${txtColor === 'text-gray-800' ? 'hover:bg-black' : 'hover:bg-white'} hover:bg-opacity-10`
+                  }`}
+                >
+                  <span className={`text-sm ${txtColor}`}>White</span>
+                </button>
+                <button
+                  onClick={() => handleTextColorChange('black')}
+                  className={`px-4 py-2 rounded-lg text-left transition-all duration-200 ${
+                    textColorMode === 'black' 
+                      ? `${txtColor === 'text-gray-800' ? 'bg-black' : 'bg-white'} bg-opacity-20` 
+                      : `${txtColor === 'text-gray-800' ? 'hover:bg-black' : 'hover:bg-white'} hover:bg-opacity-10`
+                  }`}
+                >
+                  <span className={`text-sm ${txtColor}`}>Black</span>
+                </button>
+              </div>
+            </div>
+            <div>
+              <h3 className={`text-lg font-medium mb-3 ${txtColor}`}>Display</h3>
+              <button
+                onClick={toggleFullscreen}
+                className={`w-full px-4 py-2 rounded-lg text-left transition-all duration-200 flex items-center justify-between
+                  ${txtColor === 'text-gray-800' ? 'hover:bg-black' : 'hover:bg-white'} hover:bg-opacity-10`}
+              >
+                <span className={`text-sm ${txtColor}`}>
+                  {isFullscreen ? 'Exit Fullscreen' : 'Enter Fullscreen'}
+                </span>
+                {isFullscreen ? 
+                  <Minimize size={18} className={txtColor} /> : 
+                  <Maximize size={18} className={txtColor} />
+                }
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+  */
   function progressBar() {
     return <div className="flex items-center gap-4 mb-2 mt-3">
       <span className={`text-md font-atkinson-hyperlegible ${txtColor} ${colorTransition}`}>
@@ -611,78 +903,7 @@ export default function Player({ accessToken }: PlayerProps) {
       </button>
     </div>;
   }
-  function SettingsMenu() {
-    
-    const handleModeChange = (newMode: 'gradient' | 'solid') => {
-      setCurrentBackground(prev => ({
-        ...prev,
-        mode: newMode
-      }));
-      
-    };
-    const toggleFullscreen = () => {
-    
-      if (!document.fullscreenElement) {
-        document.documentElement.requestFullscreen();
-        setIsFullscreen(true);
-      } 
-  
-      else {
-        document.exitFullscreen();
-        setIsFullscreen(false);
-      }
-    };
-    //!!!NEED TO FOCUS ON NOT JUST USING DIVS
-    return (
-      <div className={`h-full w-full rounded-lg ${txtColor === 'text-gray-800' ? 'bg-white' : 'bg-black'} bg-opacity-40 backdrop-blur-sm shadow-lg`}>
-        <div className="flex flex-col gap-3">
 
-          <button
-            onMouseDown={() => handleModeChange('gradient')}
-
-            onTouchStart={() => handleModeChange('gradient')}
-            className={`px-3 py-1 rounded-full text-left ${
-              currentBackground.mode === 'gradient' ? 'bg-opacity-40' : 'bg-opacity-10'
-            } ${txtColor === 'text-gray-800' ? 'bg-white' : 'bg-black'}`}
-          >
-            
-            <span className={`text-sm ${txtColor}`}>
-              Gradient Background
-            </span>
-          </button>
-          <button
-            onMouseDown={() => handleModeChange('solid')}
-            onTouchStart={() => handleModeChange('solid')}
-            className={`py-1 rounded-full text-left ${
-              currentBackground.mode === 'solid' ? 'bg-opacity-40' : 'bg-opacity-10'
-            } ${txtColor === 'text-gray-800' ? 'bg-white' : 'bg-black'}`}
-          >
-            <span className={`text-sm ${txtColor}`}>
-              Solid Background
-            </span>
-
-          </button>
-          <div className="h-px bg-current opacity-10 my-2"></div>
-
-        <button
-          onMouseDown={toggleFullscreen}
-          
-          className={` py-1 rounded-lg text-left flex items-center justify-between
-            ${txtColor === 'text-gray-800' ? 'hover:bg-black' : 'hover:bg-white'} 
-            hover:bg-opacity-10`}
-        >
-          <span className={`text-sm ${txtColor}`}>
-            {isFullscreen ? 'Exit Fullscreen' : 'Enter Fullscreen'}
-          </span>
-          {isFullscreen ? 
-            <Minimize size={18} className={txtColor} /> : 
-            <Maximize size={18} className={txtColor} />
-          }
-        </button>
-      
-        </div>
-      </div>
-      );}
 
       function Playlists() {
         return (
