@@ -22,12 +22,9 @@ export default function About() {
 
                 <h1 className="font-atkinson-hyperlegible text-xl mt-5 underline">Features</h1>
                 <ul className="font-atkinson-hyperlegible text-md list-disc list-inside">
-                  <li>Customizable UI themes</li>
-                  <li>Real-time lyrics display</li>
-                  <li>Queue management</li>
-                  <li>Playlist creation and editing</li>
-                  <li>Seamless device switching</li>
-                  <li>Advanced search functionality</li>
+                  <li>Improved UI</li>
+                  <li>Queue Selection</li>
+                  <li>Playlist Selection</li>
                 </ul>
 
 

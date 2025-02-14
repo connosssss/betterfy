@@ -16,6 +16,7 @@ export default function Home() {
 
   return (
     <div className="">
+      <title>betterfy</title>
       <Player accessToken={session.accessToken!} />
     </div>
   );

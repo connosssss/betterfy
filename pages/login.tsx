@@ -8,6 +8,7 @@ export default function Login() {
 
   return (
     <div className="flex items-center justify-center w-full h-screen animate-background  ">
+      
       <div className="bg-black bg-opacity-40 h-2/3 w-1/2 flex flex-col rounded-3xl text-center justify-start items-center gap-10">
       <h1 className="font-atkinson-hyperlegible text-6xl mt-20 ">betterfy</h1>
       <p className=" font-atkinson-hyperlegible text-lg">An improved UI for the spotify player</p>
@@ -24,6 +25,7 @@ export default function Login() {
         About
       </button>
       </div>
+      
 
     </div>
   );

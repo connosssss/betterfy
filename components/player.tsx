@@ -5,6 +5,10 @@ import { Volume2, VolumeX, Volume1,
   Maximize, Minimize, Settings, Library,
   RefreshCw } from 'lucide-react';
 
+  import { MiddleImageyTitle } from './MiddleImageyTitle';
+  import { Queue } from './Queue';
+  import { Playlists } from './Playlists';
+
 interface PlayerProps {
   accessToken: string;
 }
@@ -410,25 +414,6 @@ export default function Player({ accessToken }: PlayerProps) {
       console.error('Error fetching queue:', error);
     }
   };
-  
-
-/*  const getPlaylist = async () => {
-     if (playerState?.context?.uri && playerState.context.uri.startsWith("spotify:playlist:")) {
-            const playlistId = playerState.context.uri.split(":")[2];
-      try {
-        const data = await spotifyFetch(`/playlists/${playlistId}/tracks`);
-     if (data && data.items) {
-      const trackIds = data.items.map((item: any) => item.track?.id).filter((id: string | undefined) => id);
-      setPlaylistTracks(trackIds);
-        }
-      } catch (error) {
-      console.error('Error fetching playlist tracks:', error);
-      setPlaylistTracks([]);
-      }
-    } else {
-      setPlaylistTracks([]);
-      }
-    }; (--)*/
 
   const handleClick = () => {
     if (playerState?.item) {
@@ -518,7 +503,7 @@ export default function Player({ accessToken }: PlayerProps) {
   };
 
 
-  if (!playerState?.device) return <div className='w-screen text-center'>No active device</div>;
+  if (!playerState?.device) return <div className='w-screen text-center'>No active device. Please start playing a song on spotify(device it is on doesn't matter) to start </div>;
 
   const VolumeIcon = volume === 0 ? VolumeX : volume < 50 ? Volume1 : Volume2; 
 
@@ -580,9 +565,28 @@ export default function Player({ accessToken }: PlayerProps) {
       
 
           <div className=' h-[87%] top-0 fixed flex w-full items-center justify-center'>
-          {Queue()}
-          {middleImageyTitle()}
-          {Playlists()}
+          <Queue 
+             QueueVisible={QueueVisible}
+              txtColor={txtColor}
+              colorTransition={colorTransition}
+              queue={queue}
+              handleChooseTrack={handleChooseTrack}
+              />
+          <MiddleImageyTitle 
+                playerState={playerState}
+                imgRef={imgRef}
+                txtColor={txtColor}
+                colorTransition={colorTransition}
+                getColor={getColor}
+                handleClick={handleClick}
+              />
+          <Playlists 
+            isPlaylistVisible={isPlaylistVisible}
+            txtColor={txtColor}
+            colorTransition={colorTransition}
+            playlists={playlists}
+            handlePlaylistSelect={handlePlaylistSelect}
+          />           
           </div>
         
           <div
@@ -595,74 +599,8 @@ export default function Player({ accessToken }: PlayerProps) {
     </div>
   );
 
-
-  function Queue() {
-   // const display =  playlistTracks.length !== 100 ? ` ${playlistTracks.indexOf(playerState.item.id) + 1} / ${playlistTracks.length}`: ``;
-   //<p className={`text-md h-3 mb-0 font-atkinson-hyperlegible ${txtColor} ${colorTransition}`}> {display}</p>
-//Spotify cap at 100 
-    return <div className={` fixed left-0 top-0 h-[87%] w-80 ${txtColor === 'text-black' ? 'bg-white' : 'bg-black'} 
-           backdrop-blur-3xl transform transition-transform duration-300 ease-in-out flex flex-col bg-opacity-20 appearance-none
-          ${QueueVisible ? 'translate-x-0' : '-translate-x-full'}`}>
-
-
-      <div className={`p-4 pt-16 ${txtColor === 'text-black' ? 'bg-white' : 'bg-black'} bg-opacity-20  gap-5`}>
-        <h2 className={`text-2xl font-atkinson-hyperlegible ${txtColor} ${colorTransition} mt-5`}> Queue </h2>
-        
-      </div>
-      <div className={`flex-1 min-h-0 overflow-y-auto mt-4 mb-4 mr-2
-      [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar]:h-2
-      [&::-webkit-scrollbar-track]:rounded-full
-      [&::-webkit-scrollbar-thumb]:rounded-full
-      ${txtColor === 'text-black' 
-      ? '[&::-webkit-scrollbar-track]:bg-black [&::-webkit-scrollbar-track]:bg-opacity-10 [&::-webkit-scrollbar-thumb]:bg-black'
-      : '[&::-webkit-scrollbar-track]:bg-white [&::-webkit-scrollbar-track]:bg-opacity-10 [&::-webkit-scrollbar-thumb]:bg-white'
-      }
-      `}>
-
-        <div className="p-4 space-y-4">
-          {queue.map((track, index) => (
-            <div key={index} className={`flex items-center space-x-3 p-2 r</div>ounded-lg 
-                  ${txtColor === 'text-black' ? 'hover:bg-black' : 'hover:bg-white'} hover:bg-opacity-10
-                  cursor-pointer`}
-                  onClick={() => handleChooseTrack(`spotify:track:${track.id}`)}>
-              <img
-                src={track.album.images[0]?.url}
-                alt=""
-                className="w-10 h-10 rounded"
-                crossOrigin="anonymous" />
-              <div className="min-w-0 ">
-                <p className={`font-atkinson-hyperlegible ${txtColor} ${colorTransition} truncate`}>
-                  {track.name}
-                </p>
-                <p className={`text-sm ${txtColor} opacity-75 ${colorTransition} truncate`}>
-                  {track.artists[0].name}
-                </p>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-      
-    </div>;
-  }
-
   //Different parts (should maybe make in different folders)
-  function middleImageyTitle() {
-    return <div className=' flex flex-col items-center justify-center h-full'>
-      <img ref={imgRef} src={playerState.item.album.images[0].url} 
-        className='rounded-xl mt-16 shadow-xl hover:scale-105 transition-transform duration-300 ease-in-out h-2/3 w-auto'
-        onLoad={getColor} crossOrigin="anonymous"
-        onClick={handleClick} />
-      <div className='mt-5 text-center'>
-       <div className={`text-5xl font-atkinson-hyperlegible p-3 ${txtColor} ${colorTransition}`}>
-          {playerState.item.name}
-       </div>
-       <div className={`text-xl font-atkinson-hyperlegible ${txtColor} ${colorTransition}`}>
-         {playerState.item.artists[0].name}
-        </div>
-      </div>
-    </div>;
-  }
+ 
 
   function bottomBar() {
     return <div className="max-w-4xl mx-auto px-4 z-20">
@@ -696,132 +634,8 @@ export default function Player({ accessToken }: PlayerProps) {
         </div>
       </div>;
     
-  }/*
-  function SettingsMenu() {
-    const handleModeChange = (newMode: 'gradient' | 'solid') => {
-      setCurrentBackground(prev => ({
-        ...prev,
-        mode: newMode
-      }));
-    };
-
-    const handleTextColorChange = (mode: TextColorMode['mode']) => {
-      setTextColorMode(mode);
-      if (mode === 'white') setTxtColor('text-white');
-      if (mode === 'black') setTxtColor('text-gray-800');
-      if (mode === 'auto') getColor();
-    };
-
-    const toggleFullscreen = () => {
-      if (!document.fullscreenElement) {
-        document.documentElement.requestFullscreen();
-        setIsFullscreen(true);
-      } else {
-        document.exitFullscreen();
-        setIsFullscreen(false);
-      }
-    };
-
-    return (
-      <div className={`h-full w-full rounded-lg ${txtColor === 'text-gray-800' ? 'bg-white' : 'bg-black'} bg-opacity-40 backdrop-blur-sm shadow-lg overflow-hidden flex flex-col`}>
-        <div className="p-6">
-          <h2 className={`text-2xl font-atkinson-hyperlegible ${txtColor} ${colorTransition} mb-4`}>Settings</h2>
-        </div>
-        <div className={`flex-1 overflow-y-auto px-6 pb-6
-          [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar]:h-2
-          [&::-webkit-scrollbar-track]:rounded-full
-          [&::-webkit-scrollbar-thumb]:rounded-full
-          ${txtColor === 'text-gray-800' 
-            ? '[&::-webkit-scrollbar-track]:bg-black [&::-webkit-scrollbar-track]:bg-opacity-10 [&::-webkit-scrollbar-thumb]:bg-black'
-            : '[&::-webkit-scrollbar-track]:bg-white [&::-webkit-scrollbar-track]:bg-opacity-10 [&::-webkit-scrollbar-thumb]:bg-white'
-          }`}>
-          <div className="space-y-6">
-            <div>
-              <h3 className={`text-lg font-medium mb-3 ${txtColor}`}>Background Style</h3>
-              <div className="flex flex-col gap-2">
-                <button
-                  onMouseDown={() => handleModeChange('gradient')}
-                  onTouchStart={() => handleModeChange('gradient')}
-                  className={`px-4 py-2 rounded-lg text-left transition-all duration-200 ${
-                    currentBackground.mode === 'gradient' 
-                      ? `${txtColor === 'text-gray-800' ? 'bg-black' : 'bg-white'} bg-opacity-20` 
-                      : `${txtColor === 'text-gray-800' ? 'hover:bg-black' : 'hover:bg-white'} hover:bg-opacity-10`
-                  }`}
-                >
-                  <span className={`text-sm ${txtColor}`}>Gradient</span>
-                </button>
-                <button
-                  onMouseDown={() => handleModeChange('solid')}
-                  onTouchStart={() => handleModeChange('solid')}
-                  className={`px-4 py-2 rounded-lg text-left transition-all duration-200 ${
-                    currentBackground.mode === 'solid' 
-                      ? `${txtColor === 'text-gray-800' ? 'bg-black' : 'bg-white'} bg-opacity-20` 
-                      : `${txtColor === 'text-gray-800' ? 'hover:bg-black' : 'hover:bg-white'} hover:bg-opacity-10`
-                  }`}
-                >
-                  <span className={`text-sm ${txtColor}`}>Solid Color</span>
-                </button>
-              </div>
-            </div>
-            <div>
-              <h3 className={`text-lg font-medium mb-3 ${txtColor}`}>Text Color</h3>
-              <div className="flex flex-col gap-2">
-                <button
-                  onMouseDown={() => handleTextColorChange('auto')}
-                  onTouchStart={() => handleTextColorChange('auto')}
-                  className={`px-4 py-2 rounded-lg text-left transition-all duration-200 ${
-                    textColorMode === 'auto' 
-                      ? `${txtColor === 'text-gray-800' ? 'bg-black' : 'bg-white'} bg-opacity-20` 
-                      : `${txtColor === 'text-gray-800' ? 'hover:bg-black' : 'hover:bg-white'} hover:bg-opacity-10`
-                  }`}
-                >
-                  <span className={`text-sm ${txtColor}`}>Auto (Based on Background)</span>
-                </button>
-                <button
-                  onMouseDown={() => handleTextColorChange('white')}
-                  onTouchStart={() => handleTextColorChange('white')}
-                  className={`px-4 py-2 rounded-lg text-left transition-all duration-200 ${
-                    textColorMode === 'white' 
-                      ? `${txtColor === 'text-gray-800' ? 'bg-black' : 'bg-white'} bg-opacity-20` 
-                      : `${txtColor === 'text-gray-800' ? 'hover:bg-black' : 'hover:bg-white'} hover:bg-opacity-10`
-                  }`}
-                >
-                  <span className={`text-sm ${txtColor}`}>White</span>
-                </button>
-                <button
-                  onClick={() => handleTextColorChange('black')}
-                  className={`px-4 py-2 rounded-lg text-left transition-all duration-200 ${
-                    textColorMode === 'black' 
-                      ? `${txtColor === 'text-gray-800' ? 'bg-black' : 'bg-white'} bg-opacity-20` 
-                      : `${txtColor === 'text-gray-800' ? 'hover:bg-black' : 'hover:bg-white'} hover:bg-opacity-10`
-                  }`}
-                >
-                  <span className={`text-sm ${txtColor}`}>Black</span>
-                </button>
-              </div>
-            </div>
-            <div>
-              <h3 className={`text-lg font-medium mb-3 ${txtColor}`}>Display</h3>
-              <button
-                onClick={toggleFullscreen}
-                className={`w-full px-4 py-2 rounded-lg text-left transition-all duration-200 flex items-center justify-between
-                  ${txtColor === 'text-gray-800' ? 'hover:bg-black' : 'hover:bg-white'} hover:bg-opacity-10`}
-              >
-                <span className={`text-sm ${txtColor}`}>
-                  {isFullscreen ? 'Exit Fullscreen' : 'Enter Fullscreen'}
-                </span>
-                {isFullscreen ? 
-                  <Minimize size={18} className={txtColor} /> : 
-                  <Maximize size={18} className={txtColor} />
-                }
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
   }
-  */
+  
   function progressBar() {
     return <div className="flex items-center gap-4 mb-2 mt-3">
       <span className={`text-md font-atkinson-hyperlegible ${txtColor} ${colorTransition}`}>
@@ -916,57 +730,6 @@ export default function Player({ accessToken }: PlayerProps) {
       </button>
     </div>;
   }
-
-
-      function Playlists() {
-        return (
-          <div className={`fixed right-0 top-0 h-[87%] w-80 ${txtColor === 'text-black' ? 'bg-white' : 'bg-black'} 
-               backdrop-blur-3xl transform transition-transform duration-300 ease-in-out flex flex-col bg-opacity-20 appearance-none
-              ${isPlaylistVisible ? 'translate-x-0' : 'translate-x-full'}`}>
-    
-            <div className={`p-4 pt-16 ${txtColor === 'text-black' ? 'bg-white' : 'bg-black'} bg-opacity-20 gap-5`}>
-              <h2 className={`text-2xl font-atkinson-hyperlegible ${txtColor} ${colorTransition} mt-5`}>Your Library</h2>
-            </div>
-    
-            <div className={`flex-1 min-h-0 overflow-y-auto mt-4 mb-4 mr-2
-              [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar]:h-2
-              [&::-webkit-scrollbar-track]:rounded-full
-              [&::-webkit-scrollbar-thumb]:rounded-full
-              ${txtColor === 'text-black' 
-                ? '[&::-webkit-scrollbar-track]:bg-black [&::-webkit-scrollbar-track]:bg-opacity-10 [&::-webkit-scrollbar-thumb]:bg-black'
-                : '[&::-webkit-scrollbar-track]:bg-white [&::-webkit-scrollbar-track]:bg-opacity-10 [&::-webkit-scrollbar-thumb]:bg-white'
-              }`}>
-    
-              <div className="p-4 space-y-4">
-                {playlists.map((playlist) => (
-                  <div 
-                    key={playlist.id}
-                    className={`flex items-center space-x-3 p-2 rounded-lg 
-                      ${txtColor === 'text-black' ? 'hover:bg-black' : 'hover:bg-white'} hover:bg-opacity-10
-                      cursor-pointer`}
-                    onClick={() => handlePlaylistSelect(`spotify:playlist:${playlist.id}`)}
-                  >
-                    <img
-                      src={playlist.images[0]?.url}
-                      alt=""
-                      className="w-10 h-10 rounded"
-                      crossOrigin="anonymous"
-                    />
-                    <div className="min-w-0">
-                      <p className={`font-atkinson-hyperlegible ${txtColor} ${colorTransition} truncate`}>
-                        {playlist.name}
-                      </p>
-                      <p className={`text-sm ${txtColor} opacity-75 ${colorTransition} truncate`}>
-                        {playlist.tracks.total} tracks
-                      </p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        );
-      }
       function Reload() {
         return <div className="fixed flex items-center justify-center ${txtColor} z-50 right-1/2 top-5 left-1/2">
         <button onClick={handleReload} className={`p-4 rounded-full ${txtColor === 'text-black' ? 'bg-white' : 'bg-black'} bg-opacity-20 px-48`}>
