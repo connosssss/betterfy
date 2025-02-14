@@ -31,6 +31,12 @@ interface PlayerState {
    };
 }
 
+interface BackgroundColors {
+  topColor: string;
+  bottomColor: string;
+  dominant: string;
+}
+
 interface QueueItem {
   id: string;
   name: string;
@@ -72,12 +78,12 @@ const SettingsMenu = ({
   txtColor: string;
   colorTransition: string;
   currentBackground: { mode: 'gradient' | 'solid'; topColor: string; bottomColor: string };
-  setCurrentBackground: (value: any) => void;
+  setCurrentBackground: React.Dispatch<React.SetStateAction<{ mode: 'gradient' | 'solid'; topColor: string; bottomColor: string }>>;
   textColorMode: TextColorMode['mode'];
-  setTextColorMode: (value: TextColorMode['mode']) => void;
-  setTxtColor: (value: string) => void;
+  setTextColorMode: React.Dispatch<React.SetStateAction<TextColorMode['mode']>>;
+  setTxtColor: React.Dispatch<React.SetStateAction<string>>;
   isFullscreen: boolean;
-  setIsFullscreen: (value: boolean) => void;
+  setIsFullscreen: React.Dispatch<React.SetStateAction<boolean>>;
   getColor: () => void;
 }) => {
   const handleModeChange = (newMode: 'gradient' | 'solid') => {
@@ -226,10 +232,10 @@ const formatTime = (ms: number) => {
   return `${minutes}:${seconds.toString().padStart(2, '0')}`;
 };
 
-const analyzeImageColors = (img: HTMLImageElement) => {
+const analyzeImageColors = (img: HTMLImageElement): BackgroundColors => {
   const canvas = document.createElement('canvas');
   const ctx = canvas.getContext('2d');
-  if (!ctx) return '#1a1a1a';
+  if (!ctx) return { topColor: '#1a1a1a', bottomColor: '#1a1a1a', dominant: '#1a1a1a' };
 
   canvas.width = img.width;
   canvas.height = img.height;
@@ -240,28 +246,27 @@ const analyzeImageColors = (img: HTMLImageElement) => {
   const getRegionAverage = (x: number, y: number, width: number, height: number) => {
     const data = ctx.getImageData(x, y, width, height).data;
     let r = 0, g = 0, b = 0, count = 0;
-    
+
     for (let i = 0; i < data.length; i += 4) {
       r += data[i];
       g += data[i + 1];
       b += data[i + 2];
       count++;
     }
-    
-    return `rgb(${Math.round(r/count)}, ${Math.round(g/count)}, ${Math.round(b/count)})`;
+
+    return `rgb(${Math.round(r / count)}, ${Math.round(g / count)}, ${Math.round(b / count)})`;
   };
 
   const topColor = getRegionAverage(0, 0, img.width, edgeSize);
   const bottomColor = getRegionAverage(0, img.height - edgeSize, img.width, edgeSize);
 
-  return { topColor, bottomColor };
+  return { topColor, bottomColor, dominant: topColor };
 };
 
 
 export default function Player({ accessToken }: PlayerProps) {
   const [playerState, setPlayerState] = useState<PlayerState | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
-  //const [bg, setBg] = useState('#1a1a1a');
   const imgRef = useRef<HTMLImageElement | null>(null);
   const [localProgress, setLocalProgress] = useState(0);
   const [isSeeking, setSeeking] = useState(false);
@@ -271,21 +276,18 @@ export default function Player({ accessToken }: PlayerProps) {
   const colorTransition = 'transition-colors duration-1000 ease-in-out';
   const [queue, setQueue] = useState<QueueItem[]>([]);
   const [QueueVisible, setQueueVisible] = useState(false);
- // const [playlistTracks, setPlaylistTracks] = useState<string[]>([]);
   const [isFullscreen, setIsFullscreen] = useState(false);
-  
   const [backgroundColors, setBackgroundColors] = useState<BackgroundColors>({ 
-  edgeTop: '#1a1a1a', 
-  edgeBottom: '#1a1a1a',
-  dominant: '#1a1a1a'
-});
+    topColor: '#1a1a1a', 
+    bottomColor: '#1a1a1a',
+    dominant: '#1a1a1a'
+  });
   const [settingsOpen, setSettingsOpen] = useState(false);
-  const [currentBackground, setCurrentBackground] = useState({
+  const [currentBackground, setCurrentBackground] = useState<{ mode: 'gradient' | 'solid'; topColor: string; bottomColor: string }>({
     topColor: '#1a1a1a',
     bottomColor: '#1a1a1a',
     mode: 'gradient'
   });
-
   const [playlists, setPlaylists] = useState<PlaylistItem[]>([]);
   const [isPlaylistVisible, setIsPlaylistVisible] = useState(false);
   const [textColorMode, setTextColorMode] = useState<TextColorMode['mode']>('auto');
@@ -366,7 +368,7 @@ export default function Player({ accessToken }: PlayerProps) {
 
   //Color
   const getColor = () => {
-    if (imgRef.current) {
+    if (imgRef.current!) {
       const colors = analyzeImageColors(imgRef.current);
       setBackgroundColors(colors);
       

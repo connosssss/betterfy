@@ -2,7 +2,7 @@ import React from 'react';
 
 interface middleImageyTitleProps {
   playerState: any;
-  imgRef: React.RefObject<HTMLImageElement>;
+  imgRef: React.RefObject<HTMLImageElement | null>;
   txtColor: string;
   colorTransition: string;
   getColor: () => void;
