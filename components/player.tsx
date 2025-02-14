@@ -2,7 +2,8 @@ import { useEffect, useState, useRef, useCallback } from 'react';
 import dynamic from 'next/dynamic';
 import { Volume2, VolumeX, Volume1,
   Play, Pause, SkipBack, SkipForward, ListMusic,
-  Maximize, Minimize, Settings, Library } from 'lucide-react';
+  Maximize, Minimize, Settings, Library,
+  RefreshCw } from 'lucide-react';
 
 interface PlayerProps {
   accessToken: string;
@@ -85,7 +86,7 @@ const SettingsMenu = ({
   const handleTextColorChange = (mode: TextColorMode['mode']) => {
     setTextColorMode(mode);
     if (mode === 'white') setTxtColor('text-white');
-    if (mode === 'black') setTxtColor('text-gray-800');
+    if (mode === 'black') setTxtColor('text-black');
     if (mode === 'auto') getColor();
   };
 
@@ -103,7 +104,7 @@ const SettingsMenu = ({
     <div 
       className={`fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 
         w-80 max-h-[80vh] rounded-lg 
-        ${txtColor === 'text-gray-800' ? 'bg-white' : 'bg-black'} 
+        ${txtColor === 'text-black' ? 'bg-white' : 'bg-black'} 
         bg-opacity-40 backdrop-blur-sm shadow-lg overflow-hidden flex flex-col z-30`}
     >
       <div className="p-6">
@@ -118,7 +119,7 @@ const SettingsMenu = ({
           [&::-webkit-scrollbar]:h-2
           [&::-webkit-scrollbar-track]:rounded-full
           [&::-webkit-scrollbar-thumb]:rounded-full
-          ${txtColor === 'text-gray-800' 
+          ${txtColor === 'text-black' 
             ? '[&::-webkit-scrollbar-track]:bg-black [&::-webkit-scrollbar-track]:bg-opacity-10 [&::-webkit-scrollbar-thumb]:bg-black'
             : '[&::-webkit-scrollbar-track]:bg-white [&::-webkit-scrollbar-track]:bg-opacity-10 [&::-webkit-scrollbar-thumb]:bg-white'
           }`}
@@ -132,8 +133,8 @@ const SettingsMenu = ({
                 onClick={() => handleModeChange('gradient')}
                 className={`px-4 py-2 rounded-lg text-left transition-all duration-200 ${
                   currentBackground.mode === 'gradient' 
-                    ? `${txtColor === 'text-gray-800' ? 'bg-black' : 'bg-white'} bg-opacity-20` 
-                    : `${txtColor === 'text-gray-800' ? 'hover:bg-black' : 'hover:bg-white'} hover:bg-opacity-10`
+                    ? `${txtColor === 'text-black' ? 'bg-black' : 'bg-white'} bg-opacity-20` 
+                    : `${txtColor === 'text-black' ? 'hover:bg-black' : 'hover:bg-white'} hover:bg-opacity-10`
                 }`}
               >
                 <span className={`text-sm ${txtColor}`}>Gradient</span>
@@ -142,8 +143,8 @@ const SettingsMenu = ({
                 onClick={() => handleModeChange('solid')}
                 className={`px-4 py-2 rounded-lg text-left transition-all duration-200 ${
                   currentBackground.mode === 'solid' 
-                    ? `${txtColor === 'text-gray-800' ? 'bg-black' : 'bg-white'} bg-opacity-20` 
-                    : `${txtColor === 'text-gray-800' ? 'hover:bg-black' : 'hover:bg-white'} hover:bg-opacity-10`
+                    ? `${txtColor === 'text-black' ? 'bg-black' : 'bg-white'} bg-opacity-20` 
+                    : `${txtColor === 'text-black' ? 'hover:bg-black' : 'hover:bg-white'} hover:bg-opacity-10`
                 }`}
               >
                 <span className={`text-sm ${txtColor}`}>Solid Color</span>
@@ -159,8 +160,8 @@ const SettingsMenu = ({
                   onTouchStart={() => handleTextColorChange('auto')}
                   className={`px-4 py-2 rounded-lg text-left transition-all duration-200 ${
                     textColorMode === 'auto' 
-                      ? `${txtColor === 'text-gray-800' ? 'bg-black' : 'bg-white'} bg-opacity-20` 
-                      : `${txtColor === 'text-gray-800' ? 'hover:bg-black' : 'hover:bg-white'} hover:bg-opacity-10`
+                      ? `${txtColor === 'text-black' ? 'bg-black' : 'bg-white'} bg-opacity-20` 
+                      : `${txtColor === 'text-black' ? 'hover:bg-black' : 'hover:bg-white'} hover:bg-opacity-10`
                   }`}
                 >
                   <span className={`text-sm ${txtColor}`}>Auto (Based on BG brightness) </span>
@@ -170,8 +171,8 @@ const SettingsMenu = ({
                   onTouchStart={() => handleTextColorChange('white')}
                   className={`px-4 py-2 rounded-lg text-left transition-all duration-200 ${
                     textColorMode === 'white' 
-                      ? `${txtColor === 'text-gray-800' ? 'bg-black' : 'bg-white'} bg-opacity-20` 
-                      : `${txtColor === 'text-gray-800' ? 'hover:bg-black' : 'hover:bg-white'} hover:bg-opacity-10`
+                      ? `${txtColor === 'text-black' ? 'bg-black' : 'bg-white'} bg-opacity-20` 
+                      : `${txtColor === 'text-black' ? 'hover:bg-black' : 'hover:bg-white'} hover:bg-opacity-10`
                   }`}
                 >
                   <span className={`text-sm ${txtColor}`}>White</span>
@@ -180,8 +181,8 @@ const SettingsMenu = ({
                   onClick={() => handleTextColorChange('black')}
                   className={`px-4 py-2 rounded-lg text-left transition-all duration-200 ${
                     textColorMode === 'black' 
-                      ? `${txtColor === 'text-gray-800' ? 'bg-black' : 'bg-white'} bg-opacity-20` 
-                      : `${txtColor === 'text-gray-800' ? 'hover:bg-black' : 'hover:bg-white'} hover:bg-opacity-10`
+                      ? `${txtColor === 'text-black' ? 'bg-black' : 'bg-white'} bg-opacity-20` 
+                      : `${txtColor === 'text-black' ? 'hover:bg-black' : 'hover:bg-white'} hover:bg-opacity-10`
                   }`}
                 >
                   <span className={`text-sm ${txtColor}`}>Black</span>
@@ -194,7 +195,7 @@ const SettingsMenu = ({
             <button
               onClick={toggleFullscreen}
               className={`w-full px-4 py-2 rounded-lg text-left transition-all duration-200 flex items-center justify-between
-                ${txtColor === 'text-gray-800' ? 'hover:bg-black' : 'hover:bg-white'} hover:bg-opacity-10`}
+                ${txtColor === 'text-black' ? 'hover:bg-black' : 'hover:bg-white'} hover:bg-opacity-10`}
             >
 
               <span className={`text-sm ${txtColor}`}>
@@ -284,7 +285,8 @@ export default function Player({ accessToken }: PlayerProps) {
   const [playlists, setPlaylists] = useState<PlaylistItem[]>([]);
   const [isPlaylistVisible, setIsPlaylistVisible] = useState(false);
   const [textColorMode, setTextColorMode] = useState<TextColorMode['mode']>('auto');
-  
+  const [hasError, setHasError] = useState(false);
+
   const spotifyFetch = async (endpoint: string, method = 'GET', body: any = null) => {
     const response = await fetch(`https://api.spotify.com/v1${endpoint}`, {
       method,
@@ -295,7 +297,7 @@ export default function Player({ accessToken }: PlayerProps) {
     });
 
     if (!response.ok && response.status !== 403){
-      throw new Error(`API error: ${response.status}`);
+      setHasError(true);
     }
 
     if (method !== 'PUT' && method !== 'POST') {
@@ -316,9 +318,11 @@ export default function Player({ accessToken }: PlayerProps) {
     if (accessToken) {
       getPlayerState();
       getQueue();
+      getPlaylists();
       const interval = setInterval(() => {
         getPlayerState();
         getQueue();
+        getPlaylists();
       }, 1000);
       return () => clearInterval(interval);
     }}, [accessToken]);
@@ -370,15 +374,15 @@ export default function Player({ accessToken }: PlayerProps) {
   
       
       if (textColorMode === 'auto') {
-        const rgb = colors.bottomColor.match(/\d+/g);
+        const rgb = colors.topColor.match(/\d+/g);
         if (rgb) {
           const [r, g, b] = rgb.map(Number);
           const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
-          const newTxtColor = luminance > 0.7 ? 'text-gray-800' : 'text-white';
+          const newTxtColor = luminance > 0.6 ? 'text-black' : 'text-white';
           setTxtColor(newTxtColor);
         }
       } else {
-        setTxtColor(textColorMode === 'white' ? 'text-white' : 'text-gray-800');
+        setTxtColor(textColorMode === 'white' ? 'text-white' : 'text-black');
       }
     }
   };
@@ -508,6 +512,12 @@ export default function Player({ accessToken }: PlayerProps) {
     }
   };
 
+  const handleReload = () => {
+    window.location.reload();
+    setHasError(false);
+  };
+
+
   if (!playerState?.device) return <div className='w-screen text-center'>No active device</div>;
 
   const VolumeIcon = volume === 0 ? VolumeX : volume < 50 ? Volume1 : Volume2; 
@@ -548,9 +558,12 @@ export default function Player({ accessToken }: PlayerProps) {
               />
             </>
           )}
+          {hasError && <Reload />}
+        
+
       <button
             onClick={() => setIsPlaylistVisible(!isPlaylistVisible)}
-            className={`fixed right-4 top-4 p-3 ${txtColor === 'text-gray-800' ? 'hover:bg-black' : 'hover:bg-white'} 
+            className={`fixed right-4 top-4 p-3 ${txtColor === 'text-black' ? 'hover:bg-black' : 'hover:bg-white'} 
               hover:bg-opacity-10 rounded-full z-10 ${colorTransition} ${txtColor}`}
           >
             <Library size={25} />
@@ -558,7 +571,7 @@ export default function Player({ accessToken }: PlayerProps) {
         
         <button
         onClick={() => setQueueVisible(!QueueVisible)}
-        className={`fixed left-4 top-4 p-3 ${txtColor === 'text-gray-800' ? 'hover:bg-black' : 'hover:bg-white'} 
+        className={`fixed left-4 top-4 p-3 ${txtColor === 'text-black' ? 'hover:bg-black' : 'hover:bg-white'} 
           hover:bg-opacity-10 rounded-full z-10 ${colorTransition} ${txtColor}`}
       >
         <ListMusic size={25} />
@@ -573,7 +586,7 @@ export default function Player({ accessToken }: PlayerProps) {
           </div>
         
           <div
-          className={`w-screen fixed bottom-0 left-0 right-0 h-[13%]  bg-opacity-20 backdrop-blur-3xl rounded-sm  ${txtColor === 'text-gray-800' ?  'bg-white': 'bg-black'} ${colorTransition}`}>
+          className={`w-screen fixed bottom-0 left-0 right-0 h-[13%]  bg-opacity-20 backdrop-blur-3xl rounded-sm  ${txtColor === 'text-black' ?  'bg-white': 'bg-black'} ${colorTransition}`}>
           {bottomBar()}
           </div>
 
@@ -587,12 +600,12 @@ export default function Player({ accessToken }: PlayerProps) {
    // const display =  playlistTracks.length !== 100 ? ` ${playlistTracks.indexOf(playerState.item.id) + 1} / ${playlistTracks.length}`: ``;
    //<p className={`text-md h-3 mb-0 font-atkinson-hyperlegible ${txtColor} ${colorTransition}`}> {display}</p>
 //Spotify cap at 100 
-    return <div className={` fixed left-0 top-0 h-[87%] w-80 ${txtColor === 'text-gray-800' ? 'bg-white' : 'bg-black'} 
+    return <div className={` fixed left-0 top-0 h-[87%] w-80 ${txtColor === 'text-black' ? 'bg-white' : 'bg-black'} 
            backdrop-blur-3xl transform transition-transform duration-300 ease-in-out flex flex-col bg-opacity-20 appearance-none
           ${QueueVisible ? 'translate-x-0' : '-translate-x-full'}`}>
 
 
-      <div className={`p-4 pt-16 ${txtColor === 'text-gray-800' ? 'bg-white' : 'bg-black'} bg-opacity-20  gap-5`}>
+      <div className={`p-4 pt-16 ${txtColor === 'text-black' ? 'bg-white' : 'bg-black'} bg-opacity-20  gap-5`}>
         <h2 className={`text-2xl font-atkinson-hyperlegible ${txtColor} ${colorTransition} mt-5`}> Queue </h2>
         
       </div>
@@ -600,7 +613,7 @@ export default function Player({ accessToken }: PlayerProps) {
       [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar]:h-2
       [&::-webkit-scrollbar-track]:rounded-full
       [&::-webkit-scrollbar-thumb]:rounded-full
-      ${txtColor === 'text-gray-800' 
+      ${txtColor === 'text-black' 
       ? '[&::-webkit-scrollbar-track]:bg-black [&::-webkit-scrollbar-track]:bg-opacity-10 [&::-webkit-scrollbar-thumb]:bg-black'
       : '[&::-webkit-scrollbar-track]:bg-white [&::-webkit-scrollbar-track]:bg-opacity-10 [&::-webkit-scrollbar-thumb]:bg-white'
       }
@@ -609,7 +622,7 @@ export default function Player({ accessToken }: PlayerProps) {
         <div className="p-4 space-y-4">
           {queue.map((track, index) => (
             <div key={index} className={`flex items-center space-x-3 p-2 r</div>ounded-lg 
-                  ${txtColor === 'text-gray-800' ? 'hover:bg-black' : 'hover:bg-white'} hover:bg-opacity-10
+                  ${txtColor === 'text-black' ? 'hover:bg-black' : 'hover:bg-white'} hover:bg-opacity-10
                   cursor-pointer`}
                   onClick={() => handleChooseTrack(`spotify:track:${track.id}`)}>
               <img
@@ -671,7 +684,7 @@ export default function Player({ accessToken }: PlayerProps) {
           <button
             onClick={() => setSettingsOpen(!settingsOpen)}
             className={`p-2 ${
-              txtColor === 'text-gray-800' 
+              txtColor === 'text-black' 
                 ? 'hover:bg-black' 
                 : 'hover:bg-white'
             } hover:bg-opacity-10 rounded-full`}
@@ -814,10 +827,10 @@ export default function Player({ accessToken }: PlayerProps) {
       <span className={`text-md font-atkinson-hyperlegible ${txtColor} ${colorTransition}`}>
         {formatTime(localProgress)}
       </span>
-      <div className={`relative w-full h-2 ${txtColor === 'text-gray-800' ? 'bg-black' : 'bg-white'} 
+      <div className={`relative w-full h-2 ${txtColor === 'text-black' ? 'bg-black' : 'bg-white'} 
       bg-opacity-20 rounded-lg ${colorTransition}`}>
         <div
-          className={`absolute top-0 left-0 h-full ${txtColor === 'text-gray-800' ? 'bg-black' : 'bg-white'} 
+          className={`absolute top-0 left-0 h-full ${txtColor === 'text-black' ? 'bg-black' : 'bg-white'} 
             rounded-lg transition-all duration-300 ${colorTransition}`}
           style={{ width: `${progressPercentage}%` }} />
         <input
@@ -853,12 +866,12 @@ export default function Player({ accessToken }: PlayerProps) {
       >
         <VolumeIcon size={20} />
       </button>
-      <div className={`relative w-24 h-2 ${txtColor === 'text-gray-800' ? 'bg-black' : 'bg-white'} 
+      <div className={`relative w-24 h-2 ${txtColor === 'text-black' ? 'bg-black' : 'bg-white'} 
         bg-opacity-20 rounded-lg ${isVolumeVisible ? 'opacity-100' : 'opacity-0'} 
         transition-opacity duration-200 ${colorTransition}`}>
 
         <div
-          className={`absolute top-0 left-0 h-full ${txtColor === 'text-gray-800' ? 'bg-black' : 'bg-white'}
+          className={`absolute top-0 left-0 h-full ${txtColor === 'text-black' ? 'bg-black' : 'bg-white'}
              rounded-lg ${colorTransition}`}
           style={{ width: `${volume}%` }}
   
@@ -879,7 +892,7 @@ export default function Player({ accessToken }: PlayerProps) {
 
       <button
         onClick={() => handleSkip('previous')}
-        className={`p-3 ${txtColor === 'text-gray-800' ? 'hover:bg-black' : 'hover:bg-white'}  hover:bg-opacity-10 rounded-full ${txtColor}`}
+        className={`p-3 ${txtColor === 'text-black' ? 'hover:bg-black' : 'hover:bg-white'}  hover:bg-opacity-10 rounded-full ${txtColor}`}
       >
         <div className={`${colorTransition} ${txtColor}`}>
         <SkipBack size={15} />
@@ -887,7 +900,7 @@ export default function Player({ accessToken }: PlayerProps) {
       </button>
       <button
         onClick={handlePlayPause}
-        className={`p-3 ${txtColor === 'text-gray-800' ? 'hover:bg-black' : 'hover:bg-white'}  hover:bg-opacity-10 rounded-full ${txtColor}`}
+        className={`p-3 ${txtColor === 'text-black' ? 'hover:bg-black' : 'hover:bg-white'}  hover:bg-opacity-10 rounded-full ${txtColor}`}
       >
         <div className={`${colorTransition} ${txtColor}`}>
         {playerState?.is_playing ? <Pause size={20} /> : <Play size={20} />} 
@@ -895,7 +908,7 @@ export default function Player({ accessToken }: PlayerProps) {
       </button>
       <button
         onClick={() => handleSkip('next')}
-        className={`p-3 ${txtColor === 'text-gray-800' ? 'hover:bg-black' : 'hover:bg-white'}  hover:bg-opacity-10 rounded-full ${colorTransition} ${txtColor}`}
+        className={`p-3 ${txtColor === 'text-black' ? 'hover:bg-black' : 'hover:bg-white'}  hover:bg-opacity-10 rounded-full ${colorTransition} ${txtColor}`}
       >
         <div className={`${colorTransition} ${txtColor}`}>
         <SkipForward size={15} />
@@ -907,11 +920,11 @@ export default function Player({ accessToken }: PlayerProps) {
 
       function Playlists() {
         return (
-          <div className={`fixed right-0 top-0 h-[87%] w-80 ${txtColor === 'text-gray-800' ? 'bg-white' : 'bg-black'} 
+          <div className={`fixed right-0 top-0 h-[87%] w-80 ${txtColor === 'text-black' ? 'bg-white' : 'bg-black'} 
                backdrop-blur-3xl transform transition-transform duration-300 ease-in-out flex flex-col bg-opacity-20 appearance-none
               ${isPlaylistVisible ? 'translate-x-0' : 'translate-x-full'}`}>
     
-            <div className={`p-4 pt-16 ${txtColor === 'text-gray-800' ? 'bg-white' : 'bg-black'} bg-opacity-20 gap-5`}>
+            <div className={`p-4 pt-16 ${txtColor === 'text-black' ? 'bg-white' : 'bg-black'} bg-opacity-20 gap-5`}>
               <h2 className={`text-2xl font-atkinson-hyperlegible ${txtColor} ${colorTransition} mt-5`}>Your Library</h2>
             </div>
     
@@ -919,7 +932,7 @@ export default function Player({ accessToken }: PlayerProps) {
               [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar]:h-2
               [&::-webkit-scrollbar-track]:rounded-full
               [&::-webkit-scrollbar-thumb]:rounded-full
-              ${txtColor === 'text-gray-800' 
+              ${txtColor === 'text-black' 
                 ? '[&::-webkit-scrollbar-track]:bg-black [&::-webkit-scrollbar-track]:bg-opacity-10 [&::-webkit-scrollbar-thumb]:bg-black'
                 : '[&::-webkit-scrollbar-track]:bg-white [&::-webkit-scrollbar-track]:bg-opacity-10 [&::-webkit-scrollbar-thumb]:bg-white'
               }`}>
@@ -929,7 +942,7 @@ export default function Player({ accessToken }: PlayerProps) {
                   <div 
                     key={playlist.id}
                     className={`flex items-center space-x-3 p-2 rounded-lg 
-                      ${txtColor === 'text-gray-800' ? 'hover:bg-black' : 'hover:bg-white'} hover:bg-opacity-10
+                      ${txtColor === 'text-black' ? 'hover:bg-black' : 'hover:bg-white'} hover:bg-opacity-10
                       cursor-pointer`}
                     onClick={() => handlePlaylistSelect(`spotify:playlist:${playlist.id}`)}
                   >
@@ -953,6 +966,16 @@ export default function Player({ accessToken }: PlayerProps) {
             </div>
           </div>
         );
+      }
+      function Reload() {
+        return <div className="fixed flex items-center justify-center ${txtColor} z-50 right-1/2 top-5 left-1/2">
+        <button onClick={handleReload} className={`p-4 rounded-full ${txtColor === 'text-black' ? 'bg-white' : 'bg-black'} bg-opacity-20 px-48`}>
+
+          <RefreshCw size={20} className={txtColor} />
+        </button>
+
+
+          </div>;
       }
 }
 
