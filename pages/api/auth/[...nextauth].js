@@ -5,16 +5,7 @@ import SpotifyProvider from "next-auth/providers/spotify";
 
 
 
-const SPOTIFY_SCOPES = [
-  'user-read-playback-state',
-  'user-modify-playback-state',
-  'user-read-currently-playing',
-  'streaming',
-  'playlist-read-private',
-  'playlist-read-collaborative',
-  'playlist-modify-public',
-  'playlist-modify-private'
-].join(' ');
+const SPOTIFY_SCOPES = "user-read-recently-played user-read-playback-state user-top-read user-modify-playback-state user-read-currently-playing user-follow-read playlist-read-private user-read-email user-read-private user-library-read playlist-read-collaborative";
 
 
 
