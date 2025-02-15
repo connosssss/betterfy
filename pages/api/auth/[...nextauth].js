@@ -2,13 +2,6 @@
 import NextAuth from "next-auth";
 import SpotifyProvider from "next-auth/providers/spotify";
 
-
-
-
-const SPOTIFY_SCOPES = "user-read-recently-played user-read-playback-state user-top-read user-modify-playback-state user-read-currently-playing user-follow-read playlist-read-private user-read-email user-read-private user-library-read playlist-read-collaborative";
-
-
-
 const refreshAccessToken = async (token) => {
   try {
     const response = await fetch("https://accounts.spotify.com/api/token", {
@@ -44,7 +37,8 @@ export default NextAuth({
       clientSecret: process.env.SPOTIFY_CLIENT_SECRET,
       authorization: {
         params: {
-          scope: SPOTIFY_SCOPES,
+          scope: 'user-read-email user-read-private user-read-playback-state user-modify-playback-state playlist-read-private playlist-read-collaborative',
+          show_dialog: true,
         },
       },
     }),
