@@ -139,16 +139,7 @@ const SettingsMenu = ({
           <div>
             <h3 className={`text-lg font-medium mb-3 ${txtColor}`}>Background Style</h3>
             <div className="flex flex-col gap-2">
-              <button
-                onClick={() => handleModeChange('gradient')}
-                className={`px-4 py-2 rounded-lg text-left transition-all duration-200 ${
-                  currentBackground.mode === 'gradient' 
-                    ? `${txtColor === 'text-black' ? 'bg-black' : 'bg-white'} bg-opacity-20` 
-                    : `${txtColor === 'text-black' ? 'hover:bg-black' : 'hover:bg-white'} hover:bg-opacity-10`
-                }`}
-              >
-                <span className={`text-sm ${txtColor}`}>Gradient</span>
-              </button>
+              
               <button
                 onClick={() => handleModeChange('solid')}
                 className={`px-4 py-2 rounded-lg text-left transition-all duration-200 ${
@@ -157,7 +148,21 @@ const SettingsMenu = ({
                     : `${txtColor === 'text-black' ? 'hover:bg-black' : 'hover:bg-white'} hover:bg-opacity-10`
                 }`}
               >
-                <span className={`text-sm ${txtColor}`}>Solid Color</span>
+                <span className={`text-md ${txtColor}`}>Solid Color
+                <p className='text-sm'>A more stable background with better transitions</p>
+                </span>
+              </button>
+              <button
+                onClick={() => handleModeChange('gradient')}
+                className={`px-4 py-2 rounded-lg text-left transition-all duration-200 ${
+                  currentBackground.mode === 'gradient' 
+                    ? `${txtColor === 'text-black' ? 'bg-black' : 'bg-white'} bg-opacity-20` 
+                    : `${txtColor === 'text-black' ? 'hover:bg-black' : 'hover:bg-white'} hover:bg-opacity-10`
+                }`}
+              >
+                <span className={`text-md ${txtColor}`}>Gradient
+                  <p className='text-sm'>A more dynamic background</p>
+                </span>
               </button>
             </div>
           </div>
@@ -174,7 +179,7 @@ const SettingsMenu = ({
                       : `${txtColor === 'text-black' ? 'hover:bg-black' : 'hover:bg-white'} hover:bg-opacity-10`
                   }`}
                 >
-                  <span className={`text-sm ${txtColor}`}>Auto (Based on BG brightness) </span>
+                  <span className={`text-md ${txtColor}`}>Auto (Based on BG brightness) </span>
                 </button>
                 <button
                   onMouseDown={() => handleTextColorChange('white')}
@@ -185,7 +190,7 @@ const SettingsMenu = ({
                       : `${txtColor === 'text-black' ? 'hover:bg-black' : 'hover:bg-white'} hover:bg-opacity-10`
                   }`}
                 >
-                  <span className={`text-sm ${txtColor}`}>White</span>
+                  <span className={`text-md ${txtColor}`}>White</span>
                 </button>
                 <button
                   onClick={() => handleTextColorChange('black')}
@@ -195,7 +200,7 @@ const SettingsMenu = ({
                       : `${txtColor === 'text-black' ? 'hover:bg-black' : 'hover:bg-white'} hover:bg-opacity-10`
                   }`}
                 >
-                  <span className={`text-sm ${txtColor}`}>Black</span>
+                  <span className={`text-md ${txtColor}`}>Black</span>
                 </button>
               </div>
             </div>
@@ -208,7 +213,7 @@ const SettingsMenu = ({
                 ${txtColor === 'text-black' ? 'hover:bg-black' : 'hover:bg-white'} hover:bg-opacity-10`}
             >
 
-              <span className={`text-sm ${txtColor}`}>
+              <span className={`text-md ${txtColor}`}>
                 {isFullscreen ? 'Exit Fullscreen' : 'Enter Fullscreen'}
               </span>
 
@@ -286,7 +291,7 @@ export default function Player({ accessToken }: PlayerProps) {
   const [currentBackground, setCurrentBackground] = useState<{ mode: 'gradient' | 'solid'; topColor: string; bottomColor: string }>({
     topColor: '#1a1a1a',
     bottomColor: '#1a1a1a',
-    mode: 'gradient'
+    mode: 'solid'
   });
   const [playlists, setPlaylists] = useState<PlaylistItem[]>([]);
   const [isPlaylistVisible, setIsPlaylistVisible] = useState(false);
