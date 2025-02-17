@@ -3,7 +3,7 @@ import dynamic from 'next/dynamic';
 import { Volume2, VolumeX, Volume1,
   Play, Pause, SkipBack, SkipForward, ListMusic,
   Maximize, Minimize, Settings, Library,
-  RefreshCw } from 'lucide-react';
+  RefreshCw, LogOut  } from 'lucide-react';
 
   import { MiddleImageyTitle } from './MiddleImageyTitle';
   import { Queue } from './Queue';
@@ -108,6 +108,13 @@ const SettingsMenu = ({
       document.exitFullscreen();
       setIsFullscreen(false);
     }
+  };
+
+  
+  const handleLogout = () => {
+    
+    localStorage.removeItem('spotify_token');
+    window.location.href = '/login';
   };
 
   return (
@@ -223,6 +230,17 @@ const SettingsMenu = ({
               }
             </button>
           </div>
+
+          <div className="pt-4 border-t border-gray-600">
+            <button
+              onClick={handleLogout}
+              className={`w-full px-4 py-3 rounded-lg text-left transition-all duration-200 flex items-center justify-between
+                ${txtColor === 'text-black' ? 'hover:bg-black' : 'hover:bg-white'} hover:bg-opacity-10`}
+            >
+              <span className={`text-md ${txtColor}`}>Logout</span>
+              <LogOut size={18} className={txtColor} />
+            </button>
+          </div>
         </div>
       </div>
     </div>
@@ -327,9 +345,7 @@ export default function Player({ accessToken }: PlayerProps) {
       //nvm it is api error 429
   useEffect(() => {
     if (accessToken) {
-      getPlayerState();
-      getQueue();
-      getPlaylists();
+
       const interval = setInterval(() => {
         getPlayerState();
         getQueue();
