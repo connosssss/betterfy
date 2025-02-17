@@ -349,7 +349,7 @@ export default function Player({ accessToken }: PlayerProps) {
       const interval = setInterval(() => {
         getPlayerState();
         getQueue();
-        getPlaylists();
+      // Needed to remove due to API error 429, unmable to get working again through rate limiting  getPlaylists();
       }, 1000);
       return () => clearInterval(interval);
     }}, [accessToken]);
@@ -497,7 +497,7 @@ export default function Player({ accessToken }: PlayerProps) {
   }
 };
 
-  const getPlaylists = async () => {
+/*  const getPlaylists = async () => {
     try {
       const playlistData = await spotifyFetch('/me/playlists');
       if (playlistData.items) {
@@ -506,7 +506,7 @@ export default function Player({ accessToken }: PlayerProps) {
     } catch (error) {
       console.error('Error fetching playlists:', error);
     }
-  };
+  }; 
 
   const handlePlaylistSelect = async (playlistUri: string) => {
     try {
@@ -518,7 +518,7 @@ export default function Player({ accessToken }: PlayerProps) {
      catch (error) {
       console.error('Error playing playlist:', error);
     }
-  };
+  };*/
 
   const handleReload = () => {
     window.location.reload();
@@ -569,13 +569,13 @@ export default function Player({ accessToken }: PlayerProps) {
           {hasError && <Reload />}
         
 
-      <button
+     { /*<button
             onClick={() => setIsPlaylistVisible(!isPlaylistVisible)}
             className={`fixed right-4 top-4 p-3 ${txtColor === 'text-black' ? 'hover:bg-black' : 'hover:bg-white'} 
               hover:bg-opacity-10 rounded-full z-10 ${colorTransition} ${txtColor}`}
           >
             <Library size={25} />
-          </button>
+          </button> */}
         
         <button
         onClick={() => setQueueVisible(!QueueVisible)}
@@ -603,13 +603,13 @@ export default function Player({ accessToken }: PlayerProps) {
                 getColor={getColor}
                 handleClick={handleClick}
               />
-          <Playlists 
+         { /*<Playlists 
             isPlaylistVisible={isPlaylistVisible}
             txtColor={txtColor}
             colorTransition={colorTransition}
             playlists={playlists}
             handlePlaylistSelect={handlePlaylistSelect}
-          />           
+          />  */      }   
           </div>
         
           <div
