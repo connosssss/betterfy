@@ -16,9 +16,10 @@ export default function About() {
                 <p className="font-atkinson-hyperlegible text-md"> ❗ If there are any problems logging in, try to clear browser cookies
                 </p>
                 <p className="font-atkinson-hyperlegible text-md">❗ If there are 
-                  any issues with playing the song, try to reload the page.
+                  any issues with playing the song, try to reload the page
                 </p>
-
+                <p className="font-atkinson-hyperlegible text-md">❗ Due to Spotify API restrictions, non-premium users don't have access to the song controls
+                </p>
 
                 <h1 className="font-atkinson-hyperlegible text-xl mt-5 underline">Features</h1>
                 <ul className="font-atkinson-hyperlegible text-md list-disc list-inside">
