@@ -1,7 +1,8 @@
 # betterfy
 
 ### About
-betterfy is a customized UI for the spotify player. It uses the Spotify API to display what song is playing while also giving the user the ability to control the player through the site itself
+betterfy is a customized UI for the spotify player. It uses the Spotify API to display what song is playing while also giving the user the ability to control the player through the site itself. Through the site itself there are also different custumization options like chaning how the background reacts to songs and choosing between dark/light theme or having the program choose it for you. Even with that, more features are planned for the future
+
 
 ### How to Install and Run 
 
