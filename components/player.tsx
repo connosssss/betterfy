@@ -8,6 +8,7 @@ import { Volume2, VolumeX, Volume1,
   import { MiddleImageyTitle } from './MiddleImageyTitle';
   import { Queue } from './Queue';
   import { Playlists } from './Playlists';
+  import { PlaceHolder } from './PlaceHolder';
 
 interface PlayerProps {
   accessToken: string;
@@ -526,7 +527,12 @@ export default function Player({ accessToken }: PlayerProps) {
   };
 
 
-  if (!playerState?.device) return <div className='w-screen text-center'>No active device. Please start playing a song on spotify(device it is on doesn't matter) to start </div>;
+  if (!playerState?.device) return <PlaceHolder 
+    setQueueVisible={setQueueVisible} 
+    QueueVisible={QueueVisible} 
+    settingsOpen={settingsOpen}
+    setSettingsOpen={setSettingsOpen}
+  />;
 
   const VolumeIcon = volume === 0 ? VolumeX : volume < 50 ? Volume1 : Volume2; 
 
