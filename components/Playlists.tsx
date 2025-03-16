@@ -16,7 +16,7 @@ export const Playlists: React.FC<playlistsProps> = ({
   handlePlaylistSelect
     }) => {
         return (
-        <div className={`fixed right-0 top-0 h-[87%] w-80 ${txtColor === 'text-black' ? 'bg-white' : 'bg-black'} 
+        <div className={`fixed right-0 top-0 h-[87%] w-80 z-50 ${txtColor === 'text-black' ? 'bg-white' : 'bg-black'} 
              backdrop-blur-3xl transform transition-transform duration-300 ease-in-out flex flex-col bg-opacity-20 appearance-none
             ${isPlaylistVisible ? 'translate-x-0' : 'translate-x-full'}`}>
   

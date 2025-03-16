@@ -15,7 +15,7 @@ export const Queue: React.FC<queueProps> = ({
   queue,
   handleChooseTrack
 }) => {
-    return <div className={` fixed left-0 top-0 h-[87%] w-80 ${txtColor === 'text-black' ? 'bg-white' : 'bg-black'} 
+    return <div className={` fixed left-0 top-0 h-[87%] w-80 z-50 ${txtColor === 'text-black' ? 'bg-white' : 'bg-black'} 
         backdrop-blur-3xl transform transition-transform duration-300 ease-in-out flex flex-col bg-opacity-20 appearance-none
        ${QueueVisible ? 'translate-x-0' : '-translate-x-full'}`}>
 
