@@ -28,7 +28,7 @@ export const MiddleImageyTitle : React.FC<middleImageyTitleProps> = ({
         className={`${colorTransition}  `}
           />
 
-          <div className={`overflow-hidden w-0 group-hover:w-24 transition-all duration-300 ${txtColor} ${colorTransition} ml-2`}>
+          <div className={`overflow-hidden w-0 group-hover:w-24 transition-all duration-150 ${txtColor} ${colorTransition} ml-2`}>
             <div className='whitespace-nowrap translate-x-[-100%] group-hover:translate-x-0 transition-transform duration-300 underline'
             onClick={handleClick}>To song link</div>
           </div>
@@ -38,7 +38,7 @@ export const MiddleImageyTitle : React.FC<middleImageyTitleProps> = ({
       className='rounded-xl shadow-xl h-2/3 w-auto'
       onLoad={getColor} crossOrigin="anonymous"
        />
-       
+
     <div className='mt-5 text-center'>
      <div className={`text-5xl font-atkinson-hyperlegible p-3 ${txtColor} ${colorTransition}`}>
         {playerState.item.name}
