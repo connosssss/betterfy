@@ -74,18 +74,20 @@ const SettingsMenu = ({
   setTxtColor,
   isFullscreen,
   setIsFullscreen,
-  getColor
+  getColor,
+  handleDirectionChange
 }: {
   txtColor: string;
   colorTransition: string;
-  currentBackground: { mode: 'gradient' | 'solid'; topColor: string; bottomColor: string };
-  setCurrentBackground: React.Dispatch<React.SetStateAction<{ mode: 'gradient' | 'solid'; topColor: string; bottomColor: string }>>;
+  currentBackground: { mode: 'gradient' | 'solid'; direction: 'vertical' | 'horizontal'; topColor: string; bottomColor: string };
+  setCurrentBackground: React.Dispatch<React.SetStateAction<{ mode: 'gradient' | 'solid'; direction: 'vertical' | 'horizontal'; topColor: string; bottomColor: string }>>;
   textColorMode: TextColorMode['mode'];
   setTextColorMode: React.Dispatch<React.SetStateAction<TextColorMode['mode']>>;
   setTxtColor: React.Dispatch<React.SetStateAction<string>>;
   isFullscreen: boolean;
   setIsFullscreen: React.Dispatch<React.SetStateAction<boolean>>;
   getColor: () => void;
+  handleDirectionChange: (direction: 'vertical' | 'horizontal') => void;
 }) => {
   const handleModeChange = (newMode: 'gradient' | 'solid') => {
     setCurrentBackground(prev => ({
@@ -175,6 +177,34 @@ const SettingsMenu = ({
             </div>
           </div>
           
+          {currentBackground.mode === 'gradient' && (
+            <div>
+              <h3 className={`text-lg font-medium mb-3 ${txtColor}`}>Gradient Direction</h3>
+              <div className="flex flex-col gap-2">
+                <button
+                  onClick={() => handleDirectionChange('vertical')}
+                  className={`px-4 py-2 rounded-lg text-left transition-all duration-200 ${
+                    currentBackground.direction === 'vertical' 
+                      ? `${txtColor === 'text-black' ? 'bg-black' : 'bg-white'} bg-opacity-20` 
+                      : `${txtColor === 'text-black' ? 'hover:bg-black' : 'hover:bg-white'} hover:bg-opacity-10`
+                  }`}
+                >
+                  <span className={`text-md ${txtColor}`}>Vertical</span>
+                </button>
+                <button
+                  onClick={() => handleDirectionChange('horizontal')}
+                  className={`px-4 py-2 rounded-lg text-left transition-all duration-200 ${
+                    currentBackground.direction === 'horizontal' 
+                      ? `${txtColor === 'text-black' ? 'bg-black' : 'bg-white'} bg-opacity-20` 
+                      : `${txtColor === 'text-black' ? 'hover:bg-black' : 'hover:bg-white'} hover:bg-opacity-10`
+                  }`}
+                >
+                  <span className={`text-md ${txtColor}`}>Horizontal</span>
+                </button>
+              </div>
+            </div>
+          )}
+          
           <div>
               <h3 className={`text-lg font-medium mb-3 ${txtColor}`}>Text Color</h3>
               <div className="flex flex-col gap-2">
@@ -256,7 +286,7 @@ const formatTime = (ms: number) => {
   return `${minutes}:${seconds.toString().padStart(2, '0')}`;
 };
 
-const analyzeImageColors = (img: HTMLImageElement): BackgroundColors => {
+const analyzeImageColors = (img: HTMLImageElement, isHorizontal = false): BackgroundColors => {
   const canvas = document.createElement('canvas');
   const ctx = canvas.getContext('2d');
   if (!ctx) return { topColor: '#1a1a1a', bottomColor: '#1a1a1a', dominant: '#1a1a1a' };
@@ -281,8 +311,16 @@ const analyzeImageColors = (img: HTMLImageElement): BackgroundColors => {
     return `rgb(${Math.round(r / count)}, ${Math.round(g / count)}, ${Math.round(b / count)})`;
   };
 
-  const topColor = getRegionAverage(0, 0, img.width, edgeSize);
-  const bottomColor = getRegionAverage(0, img.height - edgeSize, img.width, edgeSize);
+  let topColor, bottomColor;
+  
+  if (isHorizontal) {
+    topColor = getRegionAverage(0, 0, edgeSize, img.height);
+    bottomColor = getRegionAverage(img.width - edgeSize, 0, edgeSize, img.height);
+  } else {
+    
+    topColor = getRegionAverage(0, 0, img.width, edgeSize); 
+    bottomColor = getRegionAverage(0, img.height - edgeSize, img.width, edgeSize); 
+  }
 
   return { topColor, bottomColor, dominant: topColor };
 };
@@ -307,10 +345,11 @@ export default function Player({ accessToken }: PlayerProps) {
     dominant: '#1a1a1a'
   });
   const [settingsOpen, setSettingsOpen] = useState(false);
-  const [currentBackground, setCurrentBackground] = useState<{ mode: 'gradient' | 'solid'; topColor: string; bottomColor: string }>({
+  const [currentBackground, setCurrentBackground] = useState<{ mode: 'gradient' | 'solid'; direction: 'vertical' | 'horizontal'; topColor: string; bottomColor: string }>({
     topColor: '#1a1a1a',
     bottomColor: '#1a1a1a',
-    mode: 'solid'
+    mode: 'solid',
+    direction: 'vertical'
   });
   const [playlists, setPlaylists] = useState<PlaylistItem[]>([]);
   const [isPlaylistVisible, setIsPlaylistVisible] = useState(false);
@@ -391,7 +430,7 @@ export default function Player({ accessToken }: PlayerProps) {
   //Color
   const getColor = () => {
     if (imgRef.current!) {
-      const colors = analyzeImageColors(imgRef.current);
+      const colors = analyzeImageColors(imgRef.current, currentBackground.direction === 'horizontal');
       setBackgroundColors(colors);
       
       setCurrentBackground(prev => ({
@@ -482,6 +521,38 @@ export default function Player({ accessToken }: PlayerProps) {
     }
   };
 
+  const handleDirectionChange = (newDirection: 'vertical' | 'horizontal') => {
+    
+    setCurrentBackground(prev => ({
+      ...prev,
+      direction: newDirection
+    }));
+    
+
+    if (imgRef.current) {
+      const colors = analyzeImageColors(imgRef.current, newDirection === 'horizontal');
+      setBackgroundColors(colors);
+      
+      setCurrentBackground(prev => ({
+        ...prev,
+        direction: newDirection,
+        topColor: colors.topColor,
+        bottomColor: colors.bottomColor
+      }));
+      
+      
+      if (textColorMode === 'auto') {
+        const rgb = colors.topColor.match(/\d+/g);
+        if (rgb) {
+          const [r, g, b] = rgb.map(Number);
+          const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+          const newTxtColor = luminance > 0.6 ? 'text-black' : 'text-white';
+          setTxtColor(newTxtColor);
+        }
+      }
+    }
+  };
+
   // ERROR / NEED TO FIX, IF AT END OF PLAYLIST AND CLIKC A SONG
   // IT WILL BUG OUT / STOP PLAYING ALL SONGS NO SONG IN QUEUE
   const handleChooseTrack = async (uri: string) => {
@@ -543,7 +614,9 @@ export default function Player({ accessToken }: PlayerProps) {
     <div className={"transition-colors duration-1000 ease-in-out h-screen w-full ${textColor}"} 
     style={{ 
       background: currentBackground.mode === 'gradient'
-        ? `linear-gradient(to bottom, ${currentBackground.topColor} 0%, ${currentBackground.bottomColor} 100%)`
+        ? currentBackground.direction === 'vertical'
+          ? `linear-gradient(to bottom, ${currentBackground.topColor} 0%, ${currentBackground.bottomColor} 100%)`
+          : `linear-gradient(to right, ${currentBackground.topColor} 0%, ${currentBackground.bottomColor} 100%)`
         : currentBackground.topColor,
       backgroundColor: '#1a1a1a',
     }}>
@@ -569,6 +642,7 @@ export default function Player({ accessToken }: PlayerProps) {
                 isFullscreen={isFullscreen}
                 setIsFullscreen={setIsFullscreen}
                 getColor={getColor}
+                handleDirectionChange={handleDirectionChange}
               />
             </>
           )}
