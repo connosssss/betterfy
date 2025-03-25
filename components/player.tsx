@@ -837,7 +837,7 @@ export default function Player({ accessToken }: PlayerProps) {
         return <div className="fixed flex items-center justify-center ${txtColor} z-50 right-1/2 top-5 left-1/2">
         <button onClick={handleReload} className={`p-4 rounded-full ${txtColor === 'text-black' ? 'bg-white' : 'bg-black'} bg-opacity-20 px-48`}>
 
-          <RefreshCw size={20} className={txtColor} />
+          ! Need to Refresh
         </button>
 
 
