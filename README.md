@@ -29,3 +29,7 @@ Next, you will need to go to the spotify developers site to get and API ID and s
 To get the next auth secret, you can visit [this](https://auth-secret-gen.vercel.app) site and paste what is generated into the env file 
 
 Then finally, run the application using ` npm run dev` 
+
+
+##### Warning
+Some functionality like the queue, player controls, and volume controls wont be able to be used on the spotify free plan due to API limitations set by spotify, however the visuals will still appear
