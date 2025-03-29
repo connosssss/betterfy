@@ -18,7 +18,7 @@ export default function About() {
                 <p className="font-atkinson-hyperlegible text-md">❗ If there are 
                   any issues with playing the song, try to reload the page
                 </p>
-                <p className="font-atkinson-hyperlegible text-md">❗ Due to Spotify API restrictions, non-premium users don't have access to the song controls
+                <p className="font-atkinson-hyperlegible text-md">❗ Due to Spotify API restrictions, non-premium users don't have access to the song controls(things like skipping songs, changing volume, pausing,) in addition to showing the queue, however it will still show most of the visuals
                 </p>
 
                 <h1 className="font-atkinson-hyperlegible text-xl mt-5 underline">Features</h1>
