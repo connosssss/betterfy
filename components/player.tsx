@@ -61,7 +61,7 @@ interface PlayerProps {
 }
 
 interface TextColorMode {
-  mode: 'auto' | 'white' | 'black';
+  mode: 'auto' | 'white' | 'black' | 'custom';
 }
 
 const SettingsMenu = ({
@@ -89,6 +89,9 @@ const SettingsMenu = ({
   getColor: () => void;
   handleDirectionChange: (direction: 'vertical' | 'horizontal') => void;
 }) => {
+  const [customTextColor, setCustomTextColor] = useState("#ffffff");
+  const [customBgColor, setCustomBgColor] = useState("#1a1a1a");
+  
   const handleModeChange = (newMode: 'gradient' | 'solid') => {
     setCurrentBackground(prev => ({
       ...prev,
@@ -101,6 +104,21 @@ const SettingsMenu = ({
     if (mode === 'white') setTxtColor('text-white');
     if (mode === 'black') setTxtColor('text-black');
     if (mode === 'auto') getColor();
+  };
+  
+  const applyCustomTextColor = () => {
+    setTextColorMode('custom');
+    document.documentElement.style.setProperty('--custom-text-color', customTextColor);
+    setTxtColor('text-custom');
+  };
+  
+  const applyCustomBgColor = () => {
+    setCurrentBackground(prev => ({
+      ...prev,
+      mode: 'solid',
+      topColor: customBgColor,
+      bottomColor: customBgColor
+    }));
   };
 
   const toggleFullscreen = () => {
@@ -174,6 +192,28 @@ const SettingsMenu = ({
                   <p className='text-sm'>A more dynamic background</p>
                 </span>
               </button>
+
+              <div className={`px-4 py-2 rounded-lg text-left transition-all duration-200 ${txtColor === 'text-black' ? 'hover:bg-black' : 'hover:bg-white'} hover:bg-opacity-10`}>
+                  <div className="flex items-center justify-between">
+                    <span className={`text-md ${txtColor}`}>Custom BG Color</span>
+                    <div className="flex items-center gap-2">
+                      <input 
+                        type="color" 
+                        value={customBgColor}
+                        onChange={(e) => setCustomBgColor(e.target.value)}
+                        className="w-6 h-6 rounded cursor-pointer"
+                      />
+                      <button 
+                        onClick={applyCustomBgColor}
+                        className={`text-sm px-2 py-1 rounded ${txtColor === 'text-black' ? 'bg-black' : 'bg-white'} bg-opacity-20`}
+                      >
+                        Apply
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+
             </div>
           </div>
           
@@ -240,8 +280,33 @@ const SettingsMenu = ({
                 >
                   <span className={`text-md ${txtColor}`}>Black</span>
                 </button>
+                <div className={`px-4 py-2 rounded-lg text-left transition-all duration-200 ${
+                  textColorMode === 'custom' 
+                    ? `${txtColor === 'text-black' ? 'bg-black' : 'bg-white'} bg-opacity-20` 
+                    : `${txtColor === 'text-black' ? 'hover:bg-black' : 'hover:bg-white'} hover:bg-opacity-10`
+                }`}>
+                  <div className="flex items-center justify-between">
+                    <span className={`text-md ${txtColor}`}>Custom</span>
+                    <div className="flex items-center gap-2">
+                      <input 
+                        type="color" 
+                        value={customTextColor}
+                        onChange={(e) => setCustomTextColor(e.target.value)}
+                        className="w-6 h-6 rounded cursor-pointer"
+                      />
+                      <button 
+                        onClick={applyCustomTextColor}
+                        className={`text-sm px-2 py-1 rounded ${txtColor === 'text-black' ? 'bg-black' : 'bg-white'} bg-opacity-20`}
+                      >
+                        Apply
+                      </button>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
+            
+            
 
           <div>
             <h3 className={`text-lg font-medium mb-3 ${txtColor}`}>Display</h3>
@@ -415,15 +480,19 @@ export default function Player({ accessToken }: PlayerProps) {
 
     }, [playerState?.context?.uri]);
 
-  useEffect(() => {
-    if (playerState?.item) {
-      setCurrentBackground(prev => ({
-        ...prev,
-        topColor: backgroundColors.topColor,
-        bottomColor: backgroundColors.bottomColor
-      }));
-    }
-  }, [backgroundColors, playerState?.item]);
+    //fix for custom
+    useEffect(() => {
+      if (playerState?.item) {
+        if (currentBackground.mode !== 'solid' || 
+            currentBackground.topColor === '#1a1a1a') {
+          setCurrentBackground(prev => ({
+            ...prev,
+            topColor: backgroundColors.topColor,
+            bottomColor: backgroundColors.bottomColor
+          }));
+        }
+      }
+    }, [backgroundColors, playerState?.item]);
 
  
 
