@@ -676,6 +676,7 @@ export default function Player({ accessToken }: PlayerProps) {
 
   const VolumeIcon = volume === 0 ? VolumeX : volume < 50 ? Volume1 : Volume2; 
 
+
   
  
 
@@ -721,7 +722,7 @@ export default function Player({ accessToken }: PlayerProps) {
      <button
             onClick={() => setIsPlaylistVisible(!isPlaylistVisible)}
             className={`fixed right-4 top-4 p-3 ${txtColor === 'text-black' ? 'hover:bg-black' : 'hover:bg-white'} 
-              hover:bg-opacity-10 rounded-full z-10 ${colorTransition} ${txtColor}`}
+              hover:bg-opacity-10 rounded-full z-10  ${txtColor}`}
           >
             <Library size={25} />
           </button> 
@@ -729,7 +730,7 @@ export default function Player({ accessToken }: PlayerProps) {
         <button
         onClick={() => setQueueVisible(!QueueVisible)}
         className={`fixed left-4 top-4 p-3 ${txtColor === 'text-black' ? 'hover:bg-black' : 'hover:bg-white'} 
-          hover:bg-opacity-10 rounded-full z-10 ${colorTransition} ${txtColor}`}
+          hover:bg-opacity-10 rounded-full z-10  ${txtColor}`}
       >
         <ListMusic size={25} />
       </button>
@@ -847,7 +848,7 @@ export default function Player({ accessToken }: PlayerProps) {
       onMouseEnter={() => setIsVolumeVisible(true)}
       onMouseLeave={() => setIsVolumeVisible(false)}>
       <button
-        className={`hover:bg-white hover:bg-opacity-10 rounded-full p-2 ${colorTransition} ${txtColor}`}
+        className={`hover:bg-white hover:bg-opacity-10 rounded-full p-2  ${txtColor}`}
         onClick={() => handleVolumeChange(volume === 0 ? 50 : 0)}
       >
         <VolumeIcon size={20} />
@@ -880,7 +881,7 @@ export default function Player({ accessToken }: PlayerProps) {
         onClick={() => handleSkip('previous')}
         className={`p-3 ${txtColor === 'text-black' ? 'hover:bg-black' : 'hover:bg-white'}  hover:bg-opacity-10 rounded-full ${txtColor}`}
       >
-        <div className={`${colorTransition} ${txtColor}`}>
+        <div className={` ${txtColor}`}>
         <SkipBack size={15} />
         </div>
       </button>
@@ -888,15 +889,15 @@ export default function Player({ accessToken }: PlayerProps) {
         onClick={handlePlayPause}
         className={`p-3 ${txtColor === 'text-black' ? 'hover:bg-black' : 'hover:bg-white'}  hover:bg-opacity-10 rounded-full ${txtColor}`}
       >
-        <div className={`${colorTransition} ${txtColor}`}>
+        <div className={`${txtColor}`}>
         {playerState?.is_playing ? <Pause size={20} /> : <Play size={20} />} 
         </div>
       </button>
       <button
         onClick={() => handleSkip('next')}
-        className={`p-3 ${txtColor === 'text-black' ? 'hover:bg-black' : 'hover:bg-white'}  hover:bg-opacity-10 rounded-full ${colorTransition} ${txtColor}`}
+        className={`p-3 ${txtColor === 'text-black' ? 'hover:bg-black' : 'hover:bg-white'}  hover:bg-opacity-10 rounded-full  ${txtColor}`}
       >
-        <div className={`${colorTransition} ${txtColor}`}>
+        <div className={`${txtColor}`}>
         <SkipForward size={15} />
         </div>
       </button>
