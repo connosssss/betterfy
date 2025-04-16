@@ -33,3 +33,5 @@ Then finally, run the application using ` npm run dev`
 
 ##### Warning
 Some functionality like the queue, player controls, and volume controls wont be able to be used on the spotify free plan due to API limitations set by spotify, however the visuals will still appear
+
+The website will also not work due to limitations of the spotify API without the extension (And spotify not giving it because of the limitations caused by own free plan)
