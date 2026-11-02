@@ -356,35 +356,43 @@ const analyzeImageColors = (img: HTMLImageElement, isHorizontal = false): Backgr
   const ctx = canvas.getContext('2d');
   if (!ctx) return { topColor: '#1a1a1a', bottomColor: '#1a1a1a', dominant: '#1a1a1a' };
 
-  canvas.width = img.width;
-  canvas.height = img.height;
-  ctx.drawImage(img, 0, 0);
+  const width = img.naturalWidth || img.width;
+  const height = img.naturalHeight || img.height;
 
-  const edgeSize = Math.floor(Math.min(img.width, img.height) * 0.1);
+  if (!width || !height) return { topColor: '#1a1a1a', bottomColor: '#1a1a1a', dominant: '#1a1a1a' };
 
-  const getRegionAverage = (x: number, y: number, width: number, height: number) => {
-    const data = ctx.getImageData(x, y, width, height).data;
+  canvas.width = width;
+  canvas.height = height;
+  ctx.drawImage(img, 0, 0, width, height);
+
+  const edgeSize = Math.max(1, Math.floor(Math.min(width, height) * 0.1));
+
+  const getRegionAverage = (x: number, y: number, regionWidth: number, regionHeight: number) => {
+    const data = ctx.getImageData(x, y, regionWidth, regionHeight).data;
     let r = 0, g = 0, b = 0, count = 0;
 
     for (let i = 0; i < data.length; i += 4) {
-      r += data[i];
-      g += data[i + 1];
-      b += data[i + 2];
-      count++;
+      if (data[i + 3] > 0) {
+        r += data[i];
+        g += data[i + 1];
+        b += data[i + 2];
+        count++;
+      }
     }
+
+    if (count === 0) return '#1a1a1a';
 
     return `rgb(${Math.round(r / count)}, ${Math.round(g / count)}, ${Math.round(b / count)})`;
   };
 
-  let topColor, bottomColor;
+  let topColor: string, bottomColor: string;
   
   if (isHorizontal) {
-    topColor = getRegionAverage(0, 0, edgeSize, img.height);
-    bottomColor = getRegionAverage(img.width - edgeSize, 0, edgeSize, img.height);
+    topColor = getRegionAverage(0, 0, edgeSize, height);
+    bottomColor = getRegionAverage(width - edgeSize, 0, edgeSize, height);
   } else {
-    
-    topColor = getRegionAverage(0, 0, img.width, edgeSize); 
-    bottomColor = getRegionAverage(0, img.height - edgeSize, img.width, edgeSize); 
+    topColor = getRegionAverage(0, 0, width, edgeSize); 
+    bottomColor = getRegionAverage(0, height - edgeSize, width, edgeSize); 
   }
 
   return { topColor, bottomColor, dominant: topColor };
